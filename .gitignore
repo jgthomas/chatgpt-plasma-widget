@@ -1,0 +1,30 @@
+# Local Codex workspace state
+/.agents/
+/.codex/
+
+# Out-of-source CMake and Qt build directories
+/build/
+/build-*/
+/cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/compile_commands.json
+/.qmake.stash
+
+# Qt Creator and other local editor state
+*.pro.user*
+CMakeLists.txt.user*
+/.qtcreator/
+/.idea/
+/.vscode/
+*.swp
+*~
+
+# Generated widget packages and release output
+*.plasmoid
+/dist/
+
+# Local caches and logs
+/.cache/
+*.log

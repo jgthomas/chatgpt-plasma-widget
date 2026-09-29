@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Category": "Utilities",
+        "Description": "A ChatGPT popup for the Plasma panel (development prototype)",
+        "Icon": "dialog-messages",
+        "Id": "dev.chatgpt.plasma",
+        "Name": "ChatGPT Plasma Prototype",
+        "Version": "0.1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
