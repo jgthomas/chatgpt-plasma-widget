@@ -21,7 +21,7 @@ PlasmoidItem {
             width: parent.width - 40
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
-            text: "ChatGPT browser prototype coming next"
+            text: i18n("ChatGPT browser prototype coming next")
         }
     }
 }
