@@ -45,6 +45,41 @@ Item {
         })()`)
     }
 
+    function scrollConversation(action) {
+        if (browserProfile === null || browserView.loading) {
+            return
+        }
+
+        browserView.runJavaScript(`(() => {
+            const action = ${JSON.stringify(action)}
+            const main = document.querySelector("main") || document.body
+            const isScrollable = element => {
+                const overflow = getComputedStyle(element).overflowY
+                return element.getClientRects().length > 0
+                    && element.clientHeight >= 100
+                    && element.scrollHeight > element.clientHeight + 2
+                    && (overflow === "auto" || overflow === "scroll" || overflow === "overlay")
+            }
+            const candidates = [main, ...main.querySelectorAll("*")].filter(isScrollable)
+            candidates.sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)
+            const target = candidates[0] || document.scrollingElement
+            if (!target || target.scrollHeight <= target.clientHeight + 2) {
+                return false
+            }
+
+            if (action === "top" || action === "bottom") {
+                // Reversed scroll containers use 0 at the bottom and negative
+                // scrollTop values above it; these extremes work in either direction.
+                target.scrollTop = action === "top" ? -target.scrollHeight : target.scrollHeight
+                return true
+            }
+
+            const page = Math.max(160, Math.round(target.clientHeight * 0.85))
+            target.scrollBy({top: action === "up" ? -page : page, behavior: "smooth"})
+            return true
+        })()`)
+    }
+
     Timer {
         id: nudgeTimer
         interval: 50
@@ -133,6 +168,37 @@ Item {
             PlasmaComponents.Button {
                 text: i18n("Open in browser")
                 onClicked: Qt.openUrlExternally(browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/")
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+            Layout.bottomMargin: 8
+
+            PlasmaComponents.Button {
+                text: i18n("Top")
+                focusPolicy: Qt.NoFocus
+                onClicked: root.scrollConversation("top")
+            }
+
+            PlasmaComponents.Button {
+                text: i18n("Page up")
+                focusPolicy: Qt.NoFocus
+                onClicked: root.scrollConversation("up")
+            }
+
+            PlasmaComponents.Button {
+                text: i18n("Page down")
+                focusPolicy: Qt.NoFocus
+                onClicked: root.scrollConversation("down")
+            }
+
+            PlasmaComponents.Button {
+                text: i18n("Bottom")
+                focusPolicy: Qt.NoFocus
+                onClicked: root.scrollConversation("bottom")
             }
         }
 
