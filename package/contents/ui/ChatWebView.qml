@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
 import org.kde.plasma.components as PlasmaComponents
+import "." 1.0 as Shared
 
 Item {
     id: root
@@ -41,15 +42,7 @@ Item {
         redrawTimer.restart()
     }
 
-    // A named profile keeps browser storage outside the source tree and
-    // retains session cookies after the widget or Plasma is restarted.
-    WebEngineProfilePrototype {
-        id: profilePrototype
-        storageName: "dev.chatgpt.plasma"
-        persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
-    }
-
-    property var browserProfile: null
+    property var browserProfile: Shared.ChatProfile.profile
 
     function openPopup(request) {
         const popup = popupComponent.createObject(null)
@@ -152,9 +145,14 @@ Item {
     }
 
     Component.onCompleted: {
-        browserProfile = profilePrototype.instance()
         if (browserProfile === null) {
-            loadError = i18n("Could not create the browser profile. Close other ChatGPT widget windows and reopen this one.")
+            loadError = i18n("Could not create the browser profile. Reopen the widget or restart Plasma Shell.")
+        }
+    }
+
+    onBrowserProfileChanged: {
+        if (browserProfile !== null) {
+            loadError = ""
         }
     }
 }
