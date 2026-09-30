@@ -45,6 +45,8 @@ To test the panel behaviour, use **Add Widgets** in Plasma and add **ChatGPT Pla
 
 Qt stores the named browser profile under the host application's user data directory, outside this repository. Copies of the widget in the same Plasma Shell process share one profile and sign-in. `plasmawindowed` and Plasma Shell are different host applications, so signing in to the preview does not sign in to the panel widget. The **Open in browser** button uses your regular browser and its own login state. The panel popup makes a tiny viewport resize when reopened to prompt WebEngine to repaint. If a black area still appears, **Redraw** briefly hides and shows the web view without reloading the page; **Reload** retries the current page. Loading errors appear above the web view.
 
+The widget's built-in Plasma shortcut opens and closes the popup. On opening, it focuses ChatGPT's message editor when available. The popup stays open when another window gets focus; use the shortcut or panel icon to close it.
+
 For package or QML errors, inspect the terminal output from `plasmawindowed`. For errors from an installed panel widget, inspect the Plasma Shell journal with `journalctl --user -u plasma-plasmashell.service -f`.
 
 ## Small project conventions

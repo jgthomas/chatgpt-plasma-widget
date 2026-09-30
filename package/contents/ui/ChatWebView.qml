@@ -14,7 +14,35 @@ Item {
     onPopupExpandedChanged: {
         if (popupExpanded && browserProfile !== null) {
             nudgeBrowser()
+            focusTimer.restart()
+        } else {
+            focusTimer.stop()
         }
+    }
+
+    Timer {
+        id: focusTimer
+        interval: 150
+        onTriggered: root.focusComposer()
+    }
+
+    function focusComposer() {
+        if (!popupExpanded || browserProfile === null || browserView.loading) {
+            return
+        }
+
+        browserView.forceActiveFocus()
+        browserView.runJavaScript(`(() => {
+            for (const selector of ["#prompt-textarea", '[contenteditable="true"][role="textbox"]', "textarea"]) {
+                for (const editor of document.querySelectorAll(selector)) {
+                    if (editor.getClientRects().length > 0 && !editor.matches(":disabled")) {
+                        editor.focus({preventScroll: true})
+                        return true
+                    }
+                }
+            }
+            return false
+        })()`)
     }
 
     Timer {
@@ -131,6 +159,9 @@ Item {
                         root.loadError = info.errorString || i18n("ChatGPT could not be loaded.")
                     } else if (info.status === WebEngineView.LoadSucceededStatus) {
                         root.loadError = ""
+                        if (root.popupExpanded) {
+                            focusTimer.restart()
+                        }
                     }
                 }
 

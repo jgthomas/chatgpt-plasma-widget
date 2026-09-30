@@ -8,6 +8,9 @@ PlasmoidItem {
 
     // Plasma supplies the panel icon and handles opening this representation.
     Plasmoid.icon: "dialog-messages"
+    // WebEngine focus changes can otherwise dismiss the popup while typing.
+    // The shortcut still toggles it closed.
+    hideOnWindowDeactivate: false
     preferredRepresentation: Plasmoid.formFactor === PlasmaCore.Types.Horizontal
                              || Plasmoid.formFactor === PlasmaCore.Types.Vertical
                              ? compactRepresentation : fullRepresentation
