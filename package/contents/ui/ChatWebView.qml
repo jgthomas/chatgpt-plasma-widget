@@ -10,13 +10,22 @@ Item {
 
     property string loadError: ""
     property bool popupExpanded: true
+    property int focusRequestId: 0
+    property int focusAttempts: 0
+
+    function restartComposerFocus() {
+        focusRequestId += 1
+        focusAttempts = 0
+        focusTimer.interval = 150
+        focusTimer.restart()
+    }
 
     onPopupExpandedChanged: {
+        focusRequestId += 1
+        focusTimer.stop()
         if (popupExpanded && browserProfile !== null) {
             nudgeBrowser()
-            focusTimer.restart()
-        } else {
-            focusTimer.stop()
+            restartComposerFocus()
         }
     }
 
@@ -31,18 +40,33 @@ Item {
             return
         }
 
-        browserView.forceActiveFocus()
+        const requestId = focusRequestId
+        focusAttempts += 1
+        if (focusAttempts === 1) {
+            browserView.forceActiveFocus()
+        }
         browserView.runJavaScript(`(() => {
+            const active = document.activeElement
             for (const selector of ["#prompt-textarea", '[contenteditable="true"][role="textbox"]', "textarea"]) {
                 for (const editor of document.querySelectorAll(selector)) {
                     if (editor.getClientRects().length > 0 && !editor.matches(":disabled")) {
+                        // Do not override a control the user has already focused.
+                        if (active && active !== document.body && active !== document.documentElement && active !== editor) {
+                            return true
+                        }
                         editor.focus({preventScroll: true})
-                        return true
+                        return document.activeElement === editor
                     }
                 }
             }
-            return false
-        })()`)
+            return Boolean(active && active !== document.body && active !== document.documentElement)
+        })()`, function(focused) {
+            if (requestId === root.focusRequestId && root.popupExpanded
+                    && focused === false && root.focusAttempts < 10) {
+                focusTimer.interval = 250
+                focusTimer.restart()
+            }
+        })
     }
 
     function scrollConversation(action) {
@@ -226,7 +250,7 @@ Item {
                     } else if (info.status === WebEngineView.LoadSucceededStatus) {
                         root.loadError = ""
                         if (root.popupExpanded) {
-                            focusTimer.restart()
+                            root.restartComposerFocus()
                         }
                     }
                 }
