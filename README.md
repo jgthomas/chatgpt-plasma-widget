@@ -11,26 +11,36 @@ A Plasma 6 panel widget that opens the ChatGPT website in a popup. It embeds the
 
 ## Install and use
 
-From this repository:
+### Install
+
+From this repository, run:
 
 ```bash
 ./scripts/dev.sh install
 ```
 
-In Plasma, open **Add Widgets**, find **ChatGPT Plasma Prototype**, and add it to a panel. Click its icon to open the popup, then sign in to ChatGPT inside the widget. You can assign a global keyboard shortcut in the widget's built-in settings; the shortcut opens and closes the popup.
+In Plasma, open **Add Widgets**, find **ChatGPT Plasma Prototype**, and add it to a panel.
 
-The popup stays open when another window receives focus. Close it with the shortcut or panel icon. Its position follows the widget's position on the panel. Its requested size is 30% of the screen width, bounded to 500–1600 pixels, and 80% of the screen height, bounded to 400–1400 pixels. Plasma may reduce the size to fit the screen and remembers manual popup resizing per widget instance. The width is capped at its screen-relative target, even if Plasma has saved a larger width.
+### Open and close
 
-The toolbar provides:
+Click the panel icon to open or close the popup. You can also assign a global keyboard shortcut in the widget's settings to toggle it. The popup stays open when another window receives focus.
+
+### Size and placement
+
+The popup opens beside the widget's panel position. It requests 30% of the screen width (between 500 and 1600 pixels) and 80% of the screen height (between 400 and 1400 pixels). Plasma may reduce the size to fit the screen and remembers manual resizing for each widget instance. The width remains capped at its screen-relative target.
+
+### Navigation and links
+
+The toolbar has these controls:
 
 - **Top**, **Scroll up**, **Scroll down**, and **Bottom** to navigate a conversation when ChatGPT's own scrollbar is hard to use.
 - **Open in browser** to hand the current page to your default browser and close the widget popup. The embedded page remains available when you reopen it.
 
-Links in ChatGPT that request a new window open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. Authentication dialogs and blank popup requests stay in Qt WebEngine so they can use the widget's sign-in profile.
+Links that request a new window open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. Authentication dialogs and blank popup requests open in Qt WebEngine so they can use the widget's sign-in profile.
 
 ### Sign-in and browser profiles
 
-The widget has a persistent browser profile separate from your regular browser. Signing in to one does not sign in to the other. Multiple copies of the widget within Plasma Shell share the same profile and sign-in.
+Open the popup and sign in to ChatGPT there. The widget keeps a persistent browser profile separate from your regular browser, so each needs its own sign-in. Multiple copies of the widget within Plasma Shell share the same profile and sign-in.
 
 The standalone `plasmawindowed` preview runs in a different host application, so it has a separate profile from the panel widget. Qt stores browser data in the host application's user data directory, outside this repository.
 
