@@ -1,13 +1,20 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
+import org.kde.ki18n
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.extras as PlasmaExtras
 import "." 1.0 as Shared
 
 Item {
     id: root
+
+    readonly property KI18nContext translations: KI18nContext {
+        translationDomain: "plasma_applet_dev.chatgpt.plasma"
+    }
 
     signal closeRequested()
 
@@ -116,7 +123,10 @@ Item {
             if (action === "top" || action === "bottom") {
                 // Reversed scroll containers use 0 at the bottom and negative
                 // scrollTop values above it; these extremes work in either direction.
-                target.scrollTop = action === "top" ? -target.scrollHeight : target.scrollHeight
+                target.scrollTo({
+                    top: action === "top" ? -target.scrollHeight : target.scrollHeight,
+                    behavior: "instant"
+                })
                 return true
             }
 
@@ -141,11 +151,11 @@ Item {
     property var browserProfile: Shared.ChatProfile.profile
 
     function openPopup(request) {
-        const popup = popupComponent.createObject(null)
+        const popup = popupComponent.createObject(null) as SignInWindow
         if (popup) {
             popup.webView.acceptAsNewWindow(request)
         } else {
-            loadError = i18n("Could not open the sign-in window.")
+            loadError = root.translations.i18n("Could not open the sign-in window.")
         }
     }
 
@@ -161,30 +171,32 @@ Item {
         }
 
         if (!Qt.openUrlExternally(request.requestedUrl)) {
-            loadError = i18n("Could not open the link in your browser.")
+            loadError = root.translations.i18n("Could not open the link in your browser.")
         }
     }
 
     Component {
         id: popupComponent
 
-        Window {
-            id: popupWindow
-            width: 800
-            height: 700
-            visible: true
-            title: i18n("ChatGPT sign-in")
-            onClosing: destroy()
+        SignInWindow {}
+    }
 
-            property alias webView: popupWebView
+    component SignInWindow: Window {
+        id: popupWindow
+        width: 800
+        height: 700
+        visible: true
+        title: root.translations.i18n("ChatGPT sign-in")
+        onClosing: destroy()
 
-            WebEngineView {
-                id: popupWebView
-                anchors.fill: parent
-                profile: root.browserProfile
-                onNewWindowRequested: function(request) { root.openPopup(request) }
-                onWindowCloseRequested: popupWindow.close()
-            }
+        property alias webView: popupWebView
+
+        WebEngineView {
+            id: popupWebView
+            anchors.fill: parent
+            profile: root.browserProfile
+            onNewWindowRequested: function(request) { root.openPopup(request) }
+            onWindowCloseRequested: popupWindow.close()
         }
     }
 
@@ -198,7 +210,7 @@ Item {
             Layout.rightMargin: 8
             Layout.topMargin: 8
             level: 2
-            text: i18n("ChatGPT")
+            text: root.translations.i18n("ChatGPT")
             horizontalAlignment: Text.AlignLeft
         }
 
@@ -207,25 +219,25 @@ Item {
             Layout.margins: 8
 
             PlasmaComponents.Button {
-                text: i18n("Top")
+                text: root.translations.i18n("Top")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("top")
             }
 
             PlasmaComponents.Button {
-                text: i18n("Scroll up")
+                text: root.translations.i18n("Scroll up")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("up")
             }
 
             PlasmaComponents.Button {
-                text: i18n("Scroll down")
+                text: root.translations.i18n("Scroll down")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("down")
             }
 
             PlasmaComponents.Button {
-                text: i18n("Bottom")
+                text: root.translations.i18n("Bottom")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("bottom")
             }
@@ -235,13 +247,13 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: i18n("Open in browser")
+                text: root.translations.i18n("Open in browser")
                 onClicked: {
                     const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
                     if (Qt.openUrlExternally(target)) {
                         root.closeRequested()
                     } else {
-                        root.loadError = i18n("Could not open the page in your browser.")
+                        root.loadError = root.translations.i18n("Could not open the page in your browser.")
                     }
                 }
             }
@@ -267,7 +279,7 @@ Item {
 
                 onLoadingChanged: function(info) {
                     if (info.status === WebEngineView.LoadFailedStatus) {
-                        root.loadError = info.errorString || i18n("ChatGPT could not be loaded.")
+                        root.loadError = info.errorString || root.translations.i18n("ChatGPT could not be loaded.")
                     } else if (info.status === WebEngineView.LoadSucceededStatus) {
                         root.loadError = ""
                         if (root.popupExpanded) {
@@ -280,7 +292,7 @@ Item {
 
                 onRenderProcessTerminated: function(status, exitCode) {
                     console.warn("ChatGPT widget renderer terminated: status=" + status + ", exitCode=" + exitCode)
-                    root.loadError = i18n("The browser renderer stopped. Restart Plasma Shell to continue.")
+                    root.loadError = root.translations.i18n("The browser renderer stopped. Restart Plasma Shell to continue.")
                 }
             }
         }
@@ -288,7 +300,7 @@ Item {
 
     Component.onCompleted: {
         if (browserProfile === null) {
-            loadError = i18n("Could not create the browser profile. Reopen the widget or restart Plasma Shell.")
+            loadError = root.translations.i18n("Could not create the browser profile. Reopen the widget or restart Plasma Shell.")
         }
     }
 

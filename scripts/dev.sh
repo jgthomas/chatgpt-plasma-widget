@@ -19,7 +19,7 @@ check_project() {
             qml_linter="$qt6_qmllint"
         fi
     fi
-    "$qml_linter" "${qml_files[@]}"
+    "$qml_linter" --max-warnings 0 "${qml_files[@]}"
     bash -n "$project_dir/scripts/dev.sh"
 }
 
