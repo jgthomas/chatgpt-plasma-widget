@@ -12,6 +12,9 @@ import "." 1.0 as Shared
 Item {
     id: root
 
+    // Use native screen width to distinguish the 1080p laptop from the 4K desktop.
+    readonly property int toolbarButtonSize: Screen.width * Screen.devicePixelRatio < 2560 ? 40 : 44
+
     readonly property KI18nContext translations: KI18nContext {
         translationDomain: "plasma_applet_dev.chatgpt.plasma"
     }
@@ -217,6 +220,30 @@ Item {
         }
     }
 
+    component ToolbarIconButton: PlasmaComponents.Button {
+        id: toolbarIconButton
+
+        property bool flipSymbol: false
+
+        Layout.minimumWidth: root.toolbarButtonSize
+        Layout.preferredWidth: root.toolbarButtonSize
+        Layout.maximumWidth: root.toolbarButtonSize
+        Layout.minimumHeight: root.toolbarButtonSize
+        Layout.preferredHeight: root.toolbarButtonSize
+        Layout.maximumHeight: root.toolbarButtonSize
+        padding: 0
+        font.pixelSize: 24
+
+        contentItem: PlasmaComponents.Label {
+            text: toolbarIconButton.text
+            font: toolbarIconButton.font
+            color: "#4a90e2"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            rotation: toolbarIconButton.flipSymbol ? 180 : 0
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -235,26 +262,37 @@ Item {
             Layout.fillWidth: true
             Layout.margins: 8
 
-            PlasmaComponents.Button {
-                text: root.translations.i18n("Top")
+            ToolbarIconButton {
+                text: "⌃"
+                font.pixelSize: 28
+                font.overline: true
+                Accessible.name: root.translations.i18n("Top")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("top")
             }
 
-            PlasmaComponents.Button {
-                text: root.translations.i18n("Scroll up")
+            ToolbarIconButton {
+                text: "⌃"
+                font.pixelSize: 28
+                Accessible.name: root.translations.i18n("Scroll up")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("up")
             }
 
-            PlasmaComponents.Button {
-                text: root.translations.i18n("Scroll down")
+            ToolbarIconButton {
+                text: "⌄"
+                font.pixelSize: 28
+                Accessible.name: root.translations.i18n("Scroll down")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("down")
             }
 
-            PlasmaComponents.Button {
-                text: root.translations.i18n("Bottom")
+            ToolbarIconButton {
+                text: "⌃"
+                font.pixelSize: 28
+                font.overline: true
+                flipSymbol: true
+                Accessible.name: root.translations.i18n("Bottom")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("bottom")
             }
@@ -263,8 +301,9 @@ Item {
                 Layout.fillWidth: true
             }
 
-            PlasmaComponents.Button {
-                text: root.translations.i18n("Open in browser")
+            ToolbarIconButton {
+                text: "🌐"
+                Accessible.name: root.translations.i18n("Open in browser")
                 onClicked: {
                     const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
                     if (Qt.openUrlExternally(target)) {
