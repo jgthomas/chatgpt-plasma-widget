@@ -47,7 +47,7 @@ Qt stores the named browser profile under the host application's user data direc
 
 The **Top**, **Page up**, **Page down**, and **Bottom** controls scroll the conversation area when ChatGPT's thin scrollbar is awkward to use or page navigation keys do not work.
 
-The widget's built-in Plasma shortcut opens and closes the popup. On opening, it focuses ChatGPT's message editor when available. The popup stays open when another window gets focus; use the shortcut or panel icon to close it.
+The widget's built-in Plasma shortcut opens and closes the popup. On opening, it focuses ChatGPT's message editor when available. The popup stays open when another window gets focus; use the shortcut or panel icon to close it. The panel popup uses Plasma's own slide-down animation and requests 30% of its screen width (320–1600 pixels) and 80% of its screen height (400–1400 pixels). Width is capped at that target while we test the layout, since Plasma remembers the popup's previous width per widget instance. Plasma may further constrain the size to fit the screen. Its position follows the widget icon and panel placement; adjust the panel layout to move the popup.
 
 For package or QML errors, inspect the terminal output from `plasmawindowed`. For errors from an installed panel widget, inspect the Plasma Shell journal with `journalctl --user -u plasma-plasmashell.service -f`.
 
@@ -60,7 +60,7 @@ For package or QML errors, inspect the terminal output from `plasmawindowed`. Fo
 
 ## Current scope
 
-This stage checks basic browsing and sign-in. Keyboard shortcut behaviour, a slide-out drawer, and richer browser features are still future work. Login and session persistence must be verified by signing in manually; automated checks cannot establish that they work with your account.
+Basic browsing, sign-in, and the keyboard shortcut work in the panel popup. Popup placement is delegated to Plasma and the panel layout. Richer browser features remain future work. Login and session persistence must be verified by signing in manually; automated checks cannot establish that they work with your account.
 
 ## References
 

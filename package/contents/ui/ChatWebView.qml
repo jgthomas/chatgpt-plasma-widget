@@ -25,6 +25,9 @@ Item {
         focusTimer.stop()
         if (popupExpanded && browserProfile !== null) {
             nudgeBrowser()
+            // DOM focus survives while this WebEngineView is hidden. Clear the
+            // previous visit's focus before the delayed editor-focus attempt.
+            browserView.runJavaScript("document.activeElement?.blur()")
             restartComposerFocus()
         }
     }
