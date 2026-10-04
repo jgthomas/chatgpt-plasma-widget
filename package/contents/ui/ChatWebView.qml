@@ -89,34 +89,43 @@ Item {
 
         browserView.runJavaScript(`(() => {
             const action = ${JSON.stringify(action)}
-            const main = document.querySelector("main") || document.body
-            const isScrollable = element => {
-                const overflow = getComputedStyle(element).overflowY
-                return element.getClientRects().length > 0
-                    && element.clientHeight >= 100
-                    && element.scrollHeight > element.clientHeight
-                    && (overflow === "auto" || overflow === "scroll" || overflow === "overlay")
+            const composer = document.querySelector("#prompt-textarea")
+            const main = composer?.closest("main") || document.querySelector("main") || document.body
+            const x = window.innerWidth * 0.5
+            const y = window.innerHeight * 0.35
+            const candidates = [document.scrollingElement, ...document.querySelectorAll("*")]
+                .filter(element => {
+                    if (!element || element.clientHeight < 100
+                            || element.scrollHeight <= element.clientHeight) {
+                        return false
+                    }
+                    const rect = element.getBoundingClientRect()
+                    if (rect.width === 0 || rect.height === 0
+                            || rect.bottom <= 0 || rect.top >= window.innerHeight
+                            || rect.right <= 0 || rect.left >= window.innerWidth) {
+                        return false
+                    }
+                    if (element === document.scrollingElement) {
+                        return true
+                    }
+                    const overflow = getComputedStyle(element).overflowY
+                    return overflow === "auto" || overflow === "scroll"
+                        || overflow === "overlay" || overflow === "hidden"
+                })
+            // Prefer the conversation's own scroller over a page wrapper or
+            // the chat list, whose scroll range can be larger after a reload.
+            const tier = element => main.contains(element) ? 2 : element.contains(main) ? 1 : 0
+            const score = element => {
+                const rect = element.getBoundingClientRect()
+                const coversConversation = rect.left <= x && x < rect.right
+                    && rect.top <= y && y < rect.bottom
+                const range = element.scrollHeight - element.clientHeight
+                return range * Math.min(rect.width, window.innerWidth)
+                    * (coversConversation ? 4 : 1)
             }
-
-            // Start at the conversation area. Resizing or an expanding composer
-            // can make a larger page wrapper scrollable by only a few pixels.
-            const rect = main.getBoundingClientRect()
-            const x = Math.max(0, Math.min(window.innerWidth - 1, rect.left + rect.width * 0.5))
-            const y = Math.max(0, Math.min(window.innerHeight - 1, rect.top + rect.height * 0.35))
-            let target = null
-            for (let element = document.elementFromPoint(x, y); element; element = element.parentElement) {
-                if (isScrollable(element)) {
-                    target = element
-                    break
-                }
-            }
-
+            candidates.sort((a, b) => tier(b) - tier(a) || score(b) - score(a))
+            const target = candidates[0]
             if (!target) {
-                const candidates = [main, ...main.querySelectorAll("*")].filter(isScrollable)
-                candidates.sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)
-                target = candidates[0] || document.scrollingElement
-            }
-            if (!target || target.scrollHeight <= target.clientHeight) {
                 return false
             }
 
@@ -161,11 +170,14 @@ Item {
 
     function handleNewWindow(request) {
         const target = request.requestedUrl.toString()
-        // Authentication can open a blank page or a dialog and navigate it
-        // later. Keep those requests in the shared WebEngine profile.
+        // Keep ChatGPT sign-in on its own domains in the shared profile, even
+        // when a click opens an HTTPS window. Blank pages and dialogs can
+        // navigate to sign-in later.
+        const chatgptDomain = /^https:\/\/(?:[a-z0-9-]+\.)*(?:chatgpt\.com|openai\.com)(?::[0-9]+)?(?:[/?#]|$)/i.test(target)
         if (!request.userInitiated
                 || request.destination === WebEngineNewWindowRequest.InNewDialog
-                || !/^https?:\/\//i.test(target)) {
+                || !/^https?:\/\//i.test(target)
+                || chatgptDomain) {
             openPopup(request)
             return
         }

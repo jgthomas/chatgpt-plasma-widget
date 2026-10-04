@@ -36,7 +36,7 @@ The toolbar has these controls:
 - **Top**, **Scroll up**, **Scroll down**, and **Bottom** to navigate a conversation when ChatGPT's own scrollbar is hard to use.
 - **Open in browser** to hand the current page to your default browser and close the widget popup. The embedded page remains available when you reopen it.
 
-Links that request a new window open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. Authentication dialogs and blank popup requests open in Qt WebEngine so they can use the widget's sign-in profile.
+New-window links to external sites open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. New windows on ChatGPT or OpenAI domains, authentication dialogs, and blank popup requests stay in Qt WebEngine so they can use the widget's sign-in profile.
 
 ### Sign-in and browser profiles
 
