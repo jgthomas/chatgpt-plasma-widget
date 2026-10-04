@@ -133,6 +133,22 @@ Item {
         }
     }
 
+    function handleNewWindow(request) {
+        const target = request.requestedUrl.toString()
+        // Authentication can open a blank page or a dialog and navigate it
+        // later. Keep those requests in the shared WebEngine profile.
+        if (!request.userInitiated
+                || request.destination === WebEngineNewWindowRequest.InNewDialog
+                || !/^https?:\/\//i.test(target)) {
+            openPopup(request)
+            return
+        }
+
+        if (!Qt.openUrlExternally(request.requestedUrl)) {
+            loadError = i18n("Could not open the link in your browser.")
+        }
+    }
+
     Component {
         id: popupComponent
 
@@ -244,7 +260,7 @@ Item {
                     }
                 }
 
-                onNewWindowRequested: function(request) { root.openPopup(request) }
+                onNewWindowRequested: function(request) { root.handleNewWindow(request) }
 
                 onRenderProcessTerminated: function(status, exitCode) {
                     console.warn("ChatGPT widget renderer terminated: status=" + status + ", exitCode=" + exitCode)
