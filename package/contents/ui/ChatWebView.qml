@@ -76,7 +76,7 @@ Item {
     }
 
     function scrollConversation(action) {
-        if (browserProfile === null || browserView.loading) {
+        if (browserProfile === null) {
             return
         }
 
@@ -87,13 +87,29 @@ Item {
                 const overflow = getComputedStyle(element).overflowY
                 return element.getClientRects().length > 0
                     && element.clientHeight >= 100
-                    && element.scrollHeight > element.clientHeight + 2
+                    && element.scrollHeight > element.clientHeight
                     && (overflow === "auto" || overflow === "scroll" || overflow === "overlay")
             }
-            const candidates = [main, ...main.querySelectorAll("*")].filter(isScrollable)
-            candidates.sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)
-            const target = candidates[0] || document.scrollingElement
-            if (!target || target.scrollHeight <= target.clientHeight + 2) {
+
+            // Start at the conversation area. Resizing or an expanding composer
+            // can make a larger page wrapper scrollable by only a few pixels.
+            const rect = main.getBoundingClientRect()
+            const x = Math.max(0, Math.min(window.innerWidth - 1, rect.left + rect.width * 0.5))
+            const y = Math.max(0, Math.min(window.innerHeight - 1, rect.top + rect.height * 0.35))
+            let target = null
+            for (let element = document.elementFromPoint(x, y); element; element = element.parentElement) {
+                if (isScrollable(element)) {
+                    target = element
+                    break
+                }
+            }
+
+            if (!target) {
+                const candidates = [main, ...main.querySelectorAll("*")].filter(isScrollable)
+                candidates.sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)
+                target = candidates[0] || document.scrollingElement
+            }
+            if (!target || target.scrollHeight <= target.clientHeight) {
                 return false
             }
 
@@ -105,7 +121,7 @@ Item {
             }
 
             const page = Math.max(160, Math.round(target.clientHeight * 0.85))
-            target.scrollBy({top: action === "up" ? -page : page, behavior: "smooth"})
+            target.scrollTop += action === "up" ? -page : page
             return true
         })()`)
     }
