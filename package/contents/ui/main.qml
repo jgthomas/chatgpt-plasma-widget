@@ -8,7 +8,7 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
-    readonly property int popupTargetWidth: Math.max(500, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
+    readonly property int popupTargetWidth: Math.max(800, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
 
     // Plasma supplies the panel icon and handles opening this representation.
     Plasmoid.icon: "dialog-messages"

@@ -27,7 +27,7 @@ Click the panel icon to open or close the popup. You can also assign a global ke
 
 ### Size and placement
 
-The popup opens beside the widget's panel position. It requests 30% of the screen width (between 500 and 1600 pixels) and 80% of the screen height (between 400 and 1400 pixels). Plasma may reduce the size to fit the screen and remembers manual resizing for each widget instance. The width remains capped at its screen-relative target.
+The popup opens beside the widget's panel position. It requests 30% of the screen width (between 800 and 1600 pixels) and 80% of the screen height (between 400 and 1400 pixels). Plasma may reduce the size to fit the screen and remembers manual resizing for each widget instance. The width remains capped at its screen-relative target.
 
 ### Navigation and links
 
