@@ -69,7 +69,11 @@ This validates the package metadata and entry point, runs Qt 6 `qmllint` over th
 ./scripts/dev.sh preview
 ```
 
-`install` and `update` also run the checks. The preview uses the **installed** package, so run `update` first. Test panel placement, popup animation, shortcut behavior, and the panel sign-in in Plasma Shell; the preview does not reproduce all of those. Plasma may need to reload an already running widget after an update. To reload Plasma Shell during development:
+`install` and `update` run the checks automatically. The preview opens the installed copy of the widget, so run `update` after editing the QML and before starting the preview.
+
+Use the preview for quick layout checks. To test where the popup appears, its opening animation, the global shortcut, or sign-in, open the widget from a Plasma panel. The standalone preview does not behave exactly like the panel widget.
+
+If the panel widget still shows the old version after `update`, restart Plasma Shell:
 
 ```bash
 systemctl --user restart plasma-plasmashell.service
