@@ -1,69 +1,79 @@
 # ChatGPT Plasma widget
 
-Stage 2 is a browser feasibility prototype: a panel icon opens ChatGPT in a Qt WebEngine view. It uses a persistent, separate browser profile so you can test whether sign-in survives closing and reopening the widget.
-
-## How the project fits together
-
-`package/` is the installable *plasmoid*. Plasma reads `package/metadata.json`, then loads `package/contents/ui/main.qml`. QML describes the panel and popup interface. `scripts/dev.sh` wraps the commands used while developing; it is outside the installed package.
-
-The plugin ID, `dev.chatgpt.plasma`, identifies the installed widget. Changing it later creates a separate widget in Plasma, so keep it stable while developing.
+A Plasma 6 panel widget that opens the ChatGPT website in a popup. It embeds the site with Qt WebEngine and uses your normal ChatGPT sign-in; no API key is needed.
 
 ## Requirements
 
-- KDE Plasma 6 and Qt 6.9 or newer
-- `kpackagetool6` for installation and `plasmawindowed` for a quick preview
-- `python3` and `qmllint` for static checks
-- Qt WebEngine for the embedded browser (`qt6-webengine` on Arch Linux)
+- KDE Plasma 6, Qt 6.9 or newer, and the Qt WebEngine QML module
+- `kpackagetool6` to install the widget
+- `python3` and `qmllint` to run the project checks
+- `plasmawindowed` for the optional standalone preview
 
-## Development loop
+## Install and use
 
-From the project root:
+From this repository:
 
 ```bash
-./scripts/dev.sh check
 ./scripts/dev.sh install
-./scripts/dev.sh preview
 ```
 
-`check` validates the Plasma package metadata and entry point, lints every QML file in `package/contents`, and checks the development script's Bash syntax. `install` and `update` run the same checks before changing the installed widget. `preview` opens the installed widget in its own window. Close that window to stop the preview. After editing QML, run:
+In Plasma, open **Add Widgets**, find **ChatGPT Plasma Prototype**, and add it to a panel. Click its icon to open the popup, then sign in to ChatGPT inside the widget. You can assign a global keyboard shortcut in the widget's built-in settings; the shortcut opens and closes the popup.
+
+The popup stays open when another window receives focus. Close it with the shortcut or panel icon. Its position follows the widget's position on the panel. Its requested size is 30% of the screen width, bounded to 500–1600 pixels, and 80% of the screen height, bounded to 400–1400 pixels. Plasma may reduce the size to fit the screen and remembers manual popup resizing per widget instance. The width is capped at its screen-relative target, even if Plasma has saved a larger width.
+
+The toolbar provides:
+
+- **Top**, **Scroll up**, **Scroll down**, and **Bottom** to navigate a conversation when ChatGPT's own scrollbar is hard to use.
+- **Open in browser** to hand the current page to your default browser and close the widget popup. The embedded page remains available when you reopen it.
+
+Links in ChatGPT that request a new window open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. Authentication dialogs and blank popup requests stay in Qt WebEngine so they can use the widget's sign-in profile.
+
+### Sign-in and browser profiles
+
+The widget has a persistent browser profile separate from your regular browser. Signing in to one does not sign in to the other. Multiple copies of the widget within Plasma Shell share the same profile and sign-in.
+
+The standalone `plasmawindowed` preview runs in a different host application, so it has a separate profile from the panel widget. Qt stores browser data in the host application's user data directory, outside this repository.
+
+## Develop
+
+`package/` is the installable plasmoid. Plasma reads `package/metadata.json` and loads `package/contents/ui/main.qml`; the browser view and shared profile live alongside it. `scripts/dev.sh` is a local development helper and is not installed with the widget.
+
+| File | Purpose |
+| --- | --- |
+| `package/contents/ui/main.qml` | Panel representation, popup sizing, and close behavior |
+| `package/contents/ui/ChatWebView.qml` | Browser view, controls, focus, and link handling |
+| `package/contents/ui/ChatProfile.qml` and `qmldir` | Shared persistent WebEngine profile |
+| `package/metadata.json` | Widget name and stable plugin ID |
+| `scripts/dev.sh` | Checks, installation, updates, and preview |
+
+Run the checks after editing:
 
 ```bash
 ./scripts/dev.sh check
+```
+
+This validates the package metadata and entry point, runs `qmllint` over the QML files, and checks the development script's Bash syntax. To upgrade the installed copy and open a standalone preview:
+
+```bash
 ./scripts/dev.sh update
 ./scripts/dev.sh preview
 ```
 
-To test the panel behaviour, use **Add Widgets** in Plasma and add **ChatGPT Plasma Prototype** to a panel. Click its icon to open the popup. If an updated widget is already on the panel, Plasma may need to reload it before changes appear. `plasmoidviewer` from `plasma-sdk` is another way to test panel form factors without changing your panel.
+`install` and `update` also run the checks. The preview uses the **installed** package, so run `update` first. Test panel placement, popup animation, shortcut behavior, and the panel sign-in in Plasma Shell; the preview does not reproduce all of those. Plasma may need to reload an already running widget after an update. To reload Plasma Shell during development:
 
-## Browser feasibility check
+```bash
+systemctl --user restart plasma-plasmashell.service
+```
 
-1. Test the installed panel widget for the definitive result. Close extra widget windows so they do not complicate the test.
-2. Open the widget and sign in to ChatGPT inside it. Its browser profile is separate from your regular browser, so you will likely need to sign in again.
-3. Send a message, open an existing conversation, and check that the site is usable at the popup size.
-4. Close and reopen the popup. Then log out and back in to restart Plasma Shell and check whether you are still signed in. If testing through `plasmawindowed`, close and relaunch that program instead.
-5. Try your normal sign-in method. Authentication dialogs and blank popup requests use the same embedded browser profile.
+The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the package as a different widget, so keep it stable. Keep installable files under `package/` and wrap new user-visible QML text in `i18n("...")`.
 
-Qt stores the named browser profile under the host application's user data directory, outside this repository. Copies of the widget in the same Plasma Shell process share one profile and sign-in. `plasmawindowed` and Plasma Shell are different host applications, so signing in to the preview does not sign in to the panel widget. User-clicked links that request a new window open in your default browser while the widget stays open; authentication dialogs stay in WebEngine. The **Open in browser** button uses your regular browser and its own login state; after the URL is handed off, it closes the widget popup without changing the embedded page. The panel popup makes a tiny viewport resize when reopened to prompt WebEngine to repaint. Loading errors appear above the web view.
+## Logs
 
-The **Top**, **Scroll up**, **Scroll down**, and **Bottom** controls scroll the conversation area when ChatGPT's thin scrollbar is awkward to use or page navigation keys do not work.
-
-The widget's built-in Plasma shortcut opens and closes the popup. On opening, it focuses ChatGPT's message editor when available. The popup stays open when another window gets focus; use the shortcut or panel icon to close it. The panel popup uses Plasma's own slide-down animation and requests 30% of its screen width (500–1600 pixels) and 80% of its screen height (400–1400 pixels). Width is capped at that target while we test the layout, since Plasma remembers the popup's previous width per widget instance. Plasma may further constrain the size to fit the screen. Its position follows the widget icon and panel placement; adjust the panel layout to move the popup.
-
-For package or QML errors, inspect the terminal output from `plasmawindowed`. For errors from an installed panel widget, inspect the Plasma Shell journal with `journalctl --user -u plasma-plasmashell.service -f`.
-
-## Small project conventions
-
-- Keep installable files inside `package/`; keep development scripts and notes outside it.
-- Wrap new user-visible QML text in `i18n("...")`, so translations can be added later without revisiting the interface. [KDE's i18n guide](https://develop.kde.org/docs/plasma/widget/translations-i18n/) explains the syntax.
-- Use `./scripts/dev.sh check` before installing or committing. `.editorconfig` sets basic whitespace defaults without imposing a formatter.
-- Keep browser cookies and profile data outside the repository. The current named Qt WebEngine profile does this by default.
-
-## Current scope
-
-Basic browsing, sign-in, and the keyboard shortcut work in the panel popup. Popup placement is delegated to Plasma and the panel layout. Richer browser features remain future work. Login and session persistence must be verified by signing in manually; automated checks cannot establish that they work with your account.
+For preview errors, inspect the `plasmawindowed` terminal. For panel errors, follow the Plasma Shell journal with `journalctl --user -u plasma-plasmashell.service -f`.
 
 ## References
 
 - [KDE Plasma widget setup](https://develop.kde.org/docs/plasma/widget/setup/)
 - [KDE Plasma widget testing](https://develop.kde.org/docs/plasma/widget/testing/)
+- [KDE's QML translation guide](https://develop.kde.org/docs/plasma/widget/translations-i18n/)
 - [Qt WebEngine profile storage](https://doc.qt.io/qt-6/qml-qtwebengine-webengineprofileprototype.html)
