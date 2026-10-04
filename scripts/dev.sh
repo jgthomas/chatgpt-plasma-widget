@@ -12,14 +12,16 @@ check_project() {
         printf 'No QML files found in %s/contents\n' "$package_dir" >&2
         exit 1
     fi
-    qml_linter=qmllint
-    if command -v qmake6 >/dev/null 2>&1; then
-        qt6_qmllint="$(qmake6 -query QT_INSTALL_BINS)/qmllint"
-        if [[ -x "$qt6_qmllint" ]]; then
-            qml_linter="$qt6_qmllint"
-        fi
+    if ! command -v qmake6 >/dev/null 2>&1; then
+        printf 'qmake6 is required to locate the Qt 6 qmllint\n' >&2
+        exit 1
     fi
-    "$qml_linter" --max-warnings 0 "${qml_files[@]}"
+    qt6_qmllint="$(qmake6 -query QT_INSTALL_BINS)/qmllint"
+    if [[ ! -x "$qt6_qmllint" ]]; then
+        printf 'Qt 6 qmllint not found at %s\n' "$qt6_qmllint" >&2
+        exit 1
+    fi
+    "$qt6_qmllint" --max-warnings 0 "${qml_files[@]}"
     bash -n "$project_dir/scripts/dev.sh"
 }
 
