@@ -89,43 +89,48 @@ Item {
 
         browserView.runJavaScript(`(() => {
             const action = ${JSON.stringify(action)}
-            const composer = document.querySelector("#prompt-textarea")
-            const main = composer?.closest("main") || document.querySelector("main") || document.body
-            const x = window.innerWidth * 0.5
-            const y = window.innerHeight * 0.35
-            const candidates = [document.scrollingElement, ...document.querySelectorAll("*")]
-                .filter(element => {
-                    if (!element || element.clientHeight < 100
-                            || element.scrollHeight <= element.clientHeight) {
-                        return false
-                    }
-                    const rect = element.getBoundingClientRect()
-                    if (rect.width === 0 || rect.height === 0
-                            || rect.bottom <= 0 || rect.top >= window.innerHeight
-                            || rect.right <= 0 || rect.left >= window.innerWidth) {
-                        return false
-                    }
-                    if (element === document.scrollingElement) {
-                        return true
-                    }
-                    const overflow = getComputedStyle(element).overflowY
-                    return overflow === "auto" || overflow === "scroll"
-                        || overflow === "overlay" || overflow === "hidden"
-                })
-            // Prefer the conversation's own scroller over a page wrapper or
-            // the chat list, whose scroll range can be larger after a reload.
-            const tier = element => main.contains(element) ? 2 : element.contains(main) ? 1 : 0
-            const score = element => {
-                const rect = element.getBoundingClientRect()
-                const coversConversation = rect.left <= x && x < rect.right
-                    && rect.top <= y && y < rect.bottom
-                const range = element.scrollHeight - element.clientHeight
-                return range * Math.min(rect.width, window.innerWidth)
-                    * (coversConversation ? 4 : 1)
-            }
-            candidates.sort((a, b) => tier(b) - tier(a) || score(b) - score(a))
-            const target = candidates[0]
+            // ChatGPT currently uses this element for the conversation scrollbar.
+            // Fall back to the layout search if the site changes its class name.
+            let target = document.querySelector(".thread-scroll-container")
             if (!target) {
+                const composer = document.querySelector("#prompt-textarea")
+                const main = composer?.closest("main") || document.querySelector("main") || document.body
+                const x = window.innerWidth * 0.5
+                const y = window.innerHeight * 0.35
+                const candidates = [document.scrollingElement, ...document.querySelectorAll("*")]
+                    .filter(element => {
+                        if (!element || element.clientHeight < 100
+                                || element.scrollHeight <= element.clientHeight) {
+                            return false
+                        }
+                        const rect = element.getBoundingClientRect()
+                        if (rect.width === 0 || rect.height === 0
+                                || rect.bottom <= 0 || rect.top >= window.innerHeight
+                                || rect.right <= 0 || rect.left >= window.innerWidth) {
+                            return false
+                        }
+                        if (element === document.scrollingElement) {
+                            return true
+                        }
+                        const overflow = getComputedStyle(element).overflowY
+                        return overflow === "auto" || overflow === "scroll"
+                            || overflow === "overlay" || overflow === "hidden"
+                    })
+                // Prefer the conversation's own scroller over a page wrapper
+                // or the chat list when using the fallback search.
+                const tier = element => main.contains(element) ? 2 : element.contains(main) ? 1 : 0
+                const score = element => {
+                    const rect = element.getBoundingClientRect()
+                    const coversConversation = rect.left <= x && x < rect.right
+                        && rect.top <= y && y < rect.bottom
+                    const range = element.scrollHeight - element.clientHeight
+                    return range * Math.min(rect.width, window.innerWidth)
+                        * (coversConversation ? 4 : 1)
+                }
+                candidates.sort((a, b) => tier(b) - tier(a) || score(b) - score(a))
+                target = candidates[0]
+            }
+            if (!target || target.scrollHeight <= target.clientHeight) {
                 return false
             }
 
