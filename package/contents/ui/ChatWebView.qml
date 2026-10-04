@@ -13,7 +13,9 @@ Item {
     id: root
 
     // Use native screen width to distinguish the 1080p laptop from the 4K desktop.
-    readonly property int toolbarButtonSize: Screen.width * Screen.devicePixelRatio < 2560 ? 40 : 44
+    readonly property bool compactDesktopToolbar: Screen.width * Screen.devicePixelRatio >= 2560
+    readonly property int toolbarButtonSize: compactDesktopToolbar ? 32 : 40
+    readonly property int toolbarGlyphSize: compactDesktopToolbar ? 22 : 28
 
     readonly property KI18nContext translations: KI18nContext {
         translationDomain: "plasma_applet_dev.chatgpt.plasma"
@@ -232,7 +234,7 @@ Item {
         Layout.preferredHeight: root.toolbarButtonSize
         Layout.maximumHeight: root.toolbarButtonSize
         padding: 0
-        font.pixelSize: 24
+        font.pixelSize: root.toolbarGlyphSize
 
         contentItem: PlasmaComponents.Label {
             text: toolbarIconButton.text
@@ -264,7 +266,6 @@ Item {
 
             ToolbarIconButton {
                 text: "⌃"
-                font.pixelSize: 28
                 font.overline: true
                 Accessible.name: root.translations.i18n("Top")
                 focusPolicy: Qt.NoFocus
@@ -273,7 +274,6 @@ Item {
 
             ToolbarIconButton {
                 text: "⌃"
-                font.pixelSize: 28
                 Accessible.name: root.translations.i18n("Scroll up")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("up")
@@ -281,7 +281,6 @@ Item {
 
             ToolbarIconButton {
                 text: "⌄"
-                font.pixelSize: 28
                 Accessible.name: root.translations.i18n("Scroll down")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("down")
@@ -289,7 +288,6 @@ Item {
 
             ToolbarIconButton {
                 text: "⌃"
-                font.pixelSize: 28
                 font.overline: true
                 flipSymbol: true
                 Accessible.name: root.translations.i18n("Bottom")
@@ -303,6 +301,7 @@ Item {
 
             ToolbarIconButton {
                 text: "🌐"
+                font.pixelSize: root.compactDesktopToolbar ? 20 : 24
                 Accessible.name: root.translations.i18n("Open in browser")
                 onClicked: {
                     const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
