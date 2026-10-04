@@ -255,7 +255,7 @@ Item {
             Layout.leftMargin: 8
             Layout.rightMargin: 8
             Layout.topMargin: 8
-            level: 2
+            level: 1
             text: root.translations.i18n("ChatGPT")
             horizontalAlignment: Text.AlignLeft
         }
