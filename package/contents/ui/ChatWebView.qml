@@ -3,10 +3,13 @@ import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
 import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.extras as PlasmaExtras
 import "." 1.0 as Shared
 
 Item {
     id: root
+
+    signal closeRequested()
 
     property string loadError: ""
     property bool popupExpanded: true
@@ -119,19 +122,6 @@ Item {
         nudgeTimer.restart()
     }
 
-    Timer {
-        id: redrawTimer
-        interval: 100
-        onTriggered: browserView.visible = true
-    }
-
-    function redrawBrowser() {
-        // A hidden panel popup can reopen with a stale WebEngine texture.
-        // Toggling the item asks WebEngine to paint again without reloading the page.
-        browserView.visible = false
-        redrawTimer.restart()
-    }
-
     property var browserProfile: Shared.ChatProfile.profile
 
     function openPopup(request) {
@@ -170,39 +160,19 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
+        PlasmaExtras.Heading {
             Layout.fillWidth: true
-            Layout.margins: 8
-
-            PlasmaComponents.Label {
-                Layout.fillWidth: true
-                text: browserView.loading ? i18n("Loading ChatGPT…") : i18n("ChatGPT")
-                elide: Text.ElideRight
-            }
-
-            PlasmaComponents.Button {
-                text: i18n("Redraw")
-                enabled: root.browserProfile !== null
-                onClicked: root.redrawBrowser()
-            }
-
-            PlasmaComponents.Button {
-                text: i18n("Reload")
-                enabled: root.browserProfile !== null
-                onClicked: browserView.reload()
-            }
-
-            PlasmaComponents.Button {
-                text: i18n("Open in browser")
-                onClicked: Qt.openUrlExternally(browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/")
-            }
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+            Layout.topMargin: 8
+            level: 2
+            text: i18n("ChatGPT")
+            horizontalAlignment: Text.AlignLeft
         }
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
-            Layout.bottomMargin: 8
+            Layout.margins: 8
 
             PlasmaComponents.Button {
                 text: i18n("Top")
@@ -211,13 +181,13 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: i18n("Page up")
+                text: i18n("Scroll up")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("up")
             }
 
             PlasmaComponents.Button {
-                text: i18n("Page down")
+                text: i18n("Scroll down")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("down")
             }
@@ -226,6 +196,22 @@ Item {
                 text: i18n("Bottom")
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("bottom")
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            PlasmaComponents.Button {
+                text: i18n("Open in browser")
+                onClicked: {
+                    const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
+                    if (Qt.openUrlExternally(target)) {
+                        root.closeRequested()
+                    } else {
+                        root.loadError = i18n("Could not open the page in your browser.")
+                    }
+                }
             }
         }
 
@@ -262,7 +248,7 @@ Item {
 
                 onRenderProcessTerminated: function(status, exitCode) {
                     console.warn("ChatGPT widget renderer terminated: status=" + status + ", exitCode=" + exitCode)
-                    root.loadError = i18n("The browser renderer stopped. Reload ChatGPT to continue.")
+                    root.loadError = i18n("The browser renderer stopped. Restart Plasma Shell to continue.")
                 }
             }
         }

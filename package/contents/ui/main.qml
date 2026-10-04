@@ -6,7 +6,7 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
-    readonly property int popupTargetWidth: Math.max(320, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
+    readonly property int popupTargetWidth: Math.max(500, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
 
     // Plasma supplies the panel icon and handles opening this representation.
     Plasmoid.icon: "dialog-messages"
@@ -19,7 +19,8 @@ PlasmoidItem {
 
     fullRepresentation: ChatWebView {
         popupExpanded: root.expanded
-        Layout.minimumWidth: 320
+        onCloseRequested: root.expanded = false
+        Layout.minimumWidth: 500
         Layout.minimumHeight: 400
         Layout.preferredWidth: root.popupTargetWidth
         // Plasma remembers a manually sized popup; keep older values from
