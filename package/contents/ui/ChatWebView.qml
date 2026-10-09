@@ -25,6 +25,7 @@ Item {
     signal closeRequested()
 
     property string loadError: ""
+    property bool pageLoadFailed: false
     property bool popupExpanded: true
     property int focusRequestId: 0
     property int focusAttempts: 0
@@ -303,12 +304,22 @@ Item {
             }
         }
 
-        PlasmaComponents.Label {
+        RowLayout {
             Layout.fillWidth: true
             Layout.margins: 8
             visible: root.loadError.length > 0
-            text: root.loadError
-            wrapMode: Text.WordWrap
+
+            PlasmaComponents.Label {
+                Layout.fillWidth: true
+                text: root.loadError
+                wrapMode: Text.WordWrap
+            }
+
+            PlasmaComponents.Button {
+                visible: root.pageLoadFailed
+                text: root.translations.i18n("Try again")
+                onClicked: browserView.reload()
+            }
         }
 
         Item {
@@ -323,8 +334,13 @@ Item {
 
                 onLoadingChanged: function(info) {
                     if (info.status === WebEngineView.LoadFailedStatus) {
+                        root.pageLoadFailed = true
                         root.loadError = info.errorString || root.translations.i18n("ChatGPT could not be loaded.")
+                    } else if (info.status === WebEngineView.LoadStartedStatus) {
+                        root.pageLoadFailed = false
+                        root.loadError = ""
                     } else if (info.status === WebEngineView.LoadSucceededStatus) {
+                        root.pageLoadFailed = false
                         root.loadError = ""
                         if (root.popupExpanded) {
                             root.restartComposerFocus()
@@ -336,6 +352,7 @@ Item {
 
                 onRenderProcessTerminated: function(status, exitCode) {
                     console.warn("ChatGPT widget renderer terminated: status=" + status + ", exitCode=" + exitCode)
+                    root.pageLoadFailed = false
                     root.loadError = root.translations.i18n("The browser renderer stopped. Restart Plasma Shell to continue.")
                 }
             }
