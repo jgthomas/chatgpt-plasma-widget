@@ -13,10 +13,11 @@ import "." 1.0 as Shared
 Item {
     id: root
 
-    // Use native screen width to distinguish the 1080p laptop from the 4K desktop.
-    readonly property bool compactDesktopToolbar: Screen.width * Screen.devicePixelRatio >= 2560
-    readonly property int toolbarButtonSize: compactDesktopToolbar ? 32 : 40
-    readonly property int toolbarIconSize: compactDesktopToolbar ? 22 : 28
+    // Keep a usable logical size even when Wayland's buffer scale is higher
+    // than the display scale selected in Plasma.
+    readonly property real toolbarScale: Screen.devicePixelRatio > 0 ? Screen.devicePixelRatio : 1
+    readonly property int toolbarButtonSize: Math.max(32, Math.round(40 / toolbarScale))
+    readonly property int toolbarIconSize: Math.max(22, Math.round(28 / toolbarScale))
 
     readonly property KI18nContext translations: KI18nContext {
         translationDomain: "plasma_applet_dev.chatgpt.plasma"
