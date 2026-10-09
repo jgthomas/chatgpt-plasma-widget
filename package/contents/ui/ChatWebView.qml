@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
@@ -15,7 +16,7 @@ Item {
     // Use native screen width to distinguish the 1080p laptop from the 4K desktop.
     readonly property bool compactDesktopToolbar: Screen.width * Screen.devicePixelRatio >= 2560
     readonly property int toolbarButtonSize: compactDesktopToolbar ? 32 : 40
-    readonly property int toolbarGlyphSize: compactDesktopToolbar ? 22 : 28
+    readonly property int toolbarIconSize: compactDesktopToolbar ? 22 : 28
 
     readonly property KI18nContext translations: KI18nContext {
         translationDomain: "plasma_applet_dev.chatgpt.plasma"
@@ -223,10 +224,6 @@ Item {
     }
 
     component ToolbarIconButton: PlasmaComponents.Button {
-        id: toolbarIconButton
-
-        property bool flipSymbol: false
-
         Layout.minimumWidth: root.toolbarButtonSize
         Layout.preferredWidth: root.toolbarButtonSize
         Layout.maximumWidth: root.toolbarButtonSize
@@ -234,16 +231,12 @@ Item {
         Layout.preferredHeight: root.toolbarButtonSize
         Layout.maximumHeight: root.toolbarButtonSize
         padding: 0
-        font.pixelSize: root.toolbarGlyphSize
-
-        contentItem: PlasmaComponents.Label {
-            text: toolbarIconButton.text
-            font: toolbarIconButton.font
-            color: "#4a90e2"
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            rotation: toolbarIconButton.flipSymbol ? 180 : 0
-        }
+        display: QQC2.AbstractButton.IconOnly
+        icon.width: root.toolbarIconSize
+        icon.height: root.toolbarIconSize
+        QQC2.ToolTip.text: text
+        QQC2.ToolTip.visible: hovered
+        QQC2.ToolTip.delay: 500
     }
 
     ColumnLayout {
@@ -265,32 +258,29 @@ Item {
             Layout.margins: 8
 
             ToolbarIconButton {
-                text: "⌃"
-                font.overline: true
-                Accessible.name: root.translations.i18n("Top")
+                text: root.translations.i18n("Top")
+                icon.name: "go-top"
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("top")
             }
 
             ToolbarIconButton {
-                text: "⌃"
-                Accessible.name: root.translations.i18n("Scroll up")
+                text: root.translations.i18n("Scroll up")
+                icon.name: "go-up"
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("up")
             }
 
             ToolbarIconButton {
-                text: "⌄"
-                Accessible.name: root.translations.i18n("Scroll down")
+                text: root.translations.i18n("Scroll down")
+                icon.name: "go-down"
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("down")
             }
 
             ToolbarIconButton {
-                text: "⌃"
-                font.overline: true
-                flipSymbol: true
-                Accessible.name: root.translations.i18n("Bottom")
+                text: root.translations.i18n("Bottom")
+                icon.name: "go-bottom"
                 focusPolicy: Qt.NoFocus
                 onClicked: root.scrollConversation("bottom")
             }
@@ -300,9 +290,8 @@ Item {
             }
 
             ToolbarIconButton {
-                text: "🌐"
-                font.pixelSize: root.compactDesktopToolbar ? 20 : 24
-                Accessible.name: root.translations.i18n("Open in browser")
+                text: root.translations.i18n("Open in browser")
+                icon.name: "globe"
                 onClicked: {
                     const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
                     if (Qt.openUrlExternally(target)) {
