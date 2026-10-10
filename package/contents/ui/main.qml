@@ -9,6 +9,7 @@ PlasmoidItem {
     id: root
 
     readonly property int popupTargetWidth: Math.max(800, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
+    readonly property int popupTargetHeight: Math.max(400, Math.min(1200, Math.round(screenGeometry.height * 0.8)))
 
     // Plasma supplies the panel icon and handles opening this representation.
     Plasmoid.icon: "dialog-messages"
@@ -28,6 +29,7 @@ PlasmoidItem {
         // Plasma remembers a manually sized popup; keep older values from
         // overriding the screen-relative width while we test this layout.
         Layout.maximumWidth: root.popupTargetWidth
-        Layout.preferredHeight: Math.max(400, Math.min(1400, root.screenGeometry.height * 0.8))
+        Layout.preferredHeight: root.popupTargetHeight
+        Layout.maximumHeight: root.popupTargetHeight
     }
 }
