@@ -30,9 +30,7 @@ Click the panel icon to open or close the popup. You can also assign a global ke
 
 The popup opens beside the widget's panel position. It requests 30% of the screen width (between 800 and 1600 pixels) and 80% of the screen height (between 400 and 1200 pixels). Plasma may reduce the size to fit the screen and remembers manual resizing for each widget instance. The width and height remain capped at their screen-relative targets.
 
-### Navigation and links
-
-Use ChatGPT's in-page navigation, keyboard scrolling, or the mouse to move through a conversation.
+### Links
 
 The **Open in browser** globe button hands the current page to your default browser and closes the widget popup. The embedded page remains available when you reopen it.
 
@@ -46,24 +44,26 @@ The standalone `plasmawindowed` preview runs in a different host application, so
 
 ## Develop
 
-`package/` is the installable plasmoid. Plasma reads `package/metadata.json` and loads `package/contents/ui/main.qml`; the browser view and shared profile live alongside it. `scripts/dev.sh` is a local development helper and is not installed with the widget.
+`package/` contains the installable Plasma widget: its metadata and QML components for the panel icon, popup, embedded browser, and shared browser profile. `scripts/` contains the development and packaging helpers.
 
-| File | Purpose |
-| --- | --- |
-| `package/contents/ui/main.qml` | Panel representation, popup sizing, and close behavior |
-| `package/contents/ui/ChatWebView.qml` | Browser view, controls, focus, and link handling |
-| `package/contents/ui/ChatProfile.qml` and `qmldir` | Shared persistent WebEngine profile |
-| `package/metadata.json` | Widget name and stable plugin ID |
-| `scripts/dev.sh` | Checks, installation, updates, and preview |
-| `scripts/test-package.sh` | Isolated package installation and upgrade smoke test |
-
-Run the checks after editing:
+Run `scripts/dev.sh` from the repository root:
 
 ```bash
-./scripts/dev.sh check
+./scripts/dev.sh check    # Validate metadata, QML, and shell scripts
+./scripts/dev.sh install  # Install the widget for the first time
+./scripts/dev.sh update   # Upgrade the installed widget after editing
+./scripts/dev.sh preview  # Open the installed widget in a standalone window
 ```
 
-This validates the package metadata and entry point, runs Qt 6 `qmllint` over the QML files (with warnings treated as failures), and checks the shell scripts with Bash's syntax check and ShellCheck. ShellCheck is required locally and in CI.
+`install` and `update` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation.
+
+After editing, run `update` followed by `preview`. Use the preview for quick layout checks; test popup placement, opening animation, the global shortcut, and sign-in from a Plasma panel.
+
+If the panel widget still shows the old version after `update`, restart Plasma Shell:
+
+```bash
+systemctl --user restart plasma-plasmashell.service
+```
 
 Run the automated packaging smoke test after packaging changes:
 
@@ -71,26 +71,7 @@ Run the automated packaging smoke test after packaging changes:
 ./scripts/test-package.sh
 ```
 
-It uses `kpackagetool6` to install a temporary package copy, checks that it is discoverable and all files match, then upgrades it with a changed version and QML file and checks the installed files again. Every package operation explicitly targets a temporary package root, which is cleaned up on exit. Your installed widget and browser profile are untouched. CI runs this test on pushes and pull requests; it does not launch Plasma or test sign-in or browser behaviour.
-
-CI caches pacman's downloaded package archives with a daily key and falls back to the most recent cache for the same runner architecture. Every run still performs a full Arch upgrade and dependency installation; cached downloads do not pin package versions. Old package versions are pruned before saving. This reduces repeat downloads, but packages updated by Arch still need downloading, and package installation runs every time.
-
-To upgrade the installed copy and open a standalone preview:
-
-```bash
-./scripts/dev.sh update
-./scripts/dev.sh preview
-```
-
-`install` and `update` run the checks automatically. The preview opens the installed copy of the widget, so run `update` after editing the QML and before starting the preview.
-
-Use the preview for quick layout checks. To test where the popup appears, its opening animation, the global shortcut, or sign-in, open the widget from a Plasma panel. The standalone preview does not behave exactly like the panel widget.
-
-If the panel widget still shows the old version after `update`, restart Plasma Shell:
-
-```bash
-systemctl --user restart plasma-plasmashell.service
-```
+This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. CI runs the checks and packaging test on pushes and pull requests; browser behaviour needs manual testing.
 
 The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the package as a different widget, so keep it stable. Keep installable files under `package/` and translate new user-visible QML text with `root.translations.i18n("...")`.
 
