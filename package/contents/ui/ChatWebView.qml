@@ -13,12 +13,6 @@ import "." 1.0 as Shared
 Item {
     id: root
 
-    // Keep a usable logical size even when Wayland's buffer scale is higher
-    // than the display scale selected in Plasma.
-    readonly property real toolbarScale: Screen.devicePixelRatio > 0 ? Screen.devicePixelRatio : 1
-    readonly property int toolbarButtonSize: Math.max(32, Math.round(40 / toolbarScale))
-    readonly property int toolbarIconSize: Math.max(22, Math.round(28 / toolbarScale))
-
     readonly property KI18nContext translations: KI18nContext {
         translationDomain: "plasma_applet_dev.chatgpt.plasma"
     }
@@ -157,47 +151,38 @@ Item {
         }
     }
 
-    component ToolbarIconButton: PlasmaComponents.Button {
-        Layout.minimumWidth: root.toolbarButtonSize
-        Layout.preferredWidth: root.toolbarButtonSize
-        Layout.maximumWidth: root.toolbarButtonSize
-        Layout.minimumHeight: root.toolbarButtonSize
-        Layout.preferredHeight: root.toolbarButtonSize
-        Layout.maximumHeight: root.toolbarButtonSize
-        padding: 0
-        display: QQC2.AbstractButton.IconOnly
-        icon.width: root.toolbarIconSize
-        icon.height: root.toolbarIconSize
-        QQC2.ToolTip.text: text
-        QQC2.ToolTip.visible: hovered
-        QQC2.ToolTip.delay: 500
-    }
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
+        PlasmaExtras.PlasmoidHeading {
             Layout.fillWidth: true
-            Layout.margins: 8
 
-            PlasmaExtras.Heading {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-                level: 1
-                text: root.translations.i18n("ChatGPT")
-                horizontalAlignment: Text.AlignLeft
-            }
+            contentItem: RowLayout {
+                PlasmaExtras.Heading {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    level: 1
+                    text: root.translations.i18n("ChatGPT")
+                    horizontalAlignment: Text.AlignLeft
+                    elide: Text.ElideRight
+                    wrapMode: Text.NoWrap
+                }
 
-            ToolbarIconButton {
-                text: root.translations.i18n("Open in browser")
-                icon.name: "globe"
-                onClicked: {
-                    const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
-                    if (Qt.openUrlExternally(target)) {
-                        root.closeRequested()
-                    } else {
-                        root.loadError = root.translations.i18n("Could not open the page in your browser.")
+                PlasmaComponents.ToolButton {
+                    text: root.translations.i18n("Open in browser")
+                    display: QQC2.AbstractButton.IconOnly
+                    icon.name: "globe"
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: 500
+                    onClicked: {
+                        const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
+                        if (Qt.openUrlExternally(target)) {
+                            root.closeRequested()
+                        } else {
+                            root.loadError = root.translations.i18n("Could not open the page in your browser.")
+                        }
                     }
                 }
             }
