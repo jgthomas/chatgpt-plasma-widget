@@ -5,6 +5,10 @@ project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 package_dir="$project_dir/package"
 
 check_project() {
+    if ! command -v shellcheck >/dev/null 2>&1; then
+        printf 'shellcheck is required to check the development script\n' >&2
+        exit 1
+    fi
     python3 "$project_dir/scripts/check_metadata.py" "$package_dir" >/dev/null
     shopt -s globstar nullglob
     qml_files=("$package_dir"/contents/**/*.qml)
@@ -23,6 +27,7 @@ check_project() {
     fi
     "$qt6_qmllint" --max-warnings 0 "${qml_files[@]}"
     bash -n "$project_dir/scripts/dev.sh"
+    shellcheck "$project_dir/scripts/dev.sh"
 }
 
 case "${1:-}" in

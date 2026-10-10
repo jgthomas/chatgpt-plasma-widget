@@ -6,7 +6,7 @@ A Plasma 6 panel widget that opens the ChatGPT website in a popup. It embeds the
 
 - KDE Plasma 6, Qt 6.9 or newer, KDE Frameworks 6.23 or newer (KI18n QML module), and the Qt WebEngine QML module
 - `kpackagetool6` to install the widget
-- `python3`, `qmake6`, and Qt 6 `qmllint` to run the project checks
+- `python3`, `shellcheck`, `qmake6`, and Qt 6 `qmllint` to run the project checks
 - `plasmawindowed` for the optional standalone preview
 
 ## Install and use
@@ -61,7 +61,7 @@ Run the checks after editing:
 ./scripts/dev.sh check
 ```
 
-This validates the package metadata and entry point, runs Qt 6 `qmllint` over the QML files (with warnings treated as failures), and checks the development script's Bash syntax. To upgrade the installed copy and open a standalone preview:
+This validates the package metadata and entry point, runs Qt 6 `qmllint` over the QML files (with warnings treated as failures), and checks the development script with Bash's syntax check and ShellCheck. ShellCheck is required locally and in CI. To upgrade the installed copy and open a standalone preview:
 
 ```bash
 ./scripts/dev.sh update
