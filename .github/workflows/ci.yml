@@ -17,7 +17,7 @@ jobs:
     container: archlinux:base
     steps:
       - name: Install check dependencies
-        run: pacman -Syu --noconfirm --needed git python shellcheck qt6-declarative qt6-webengine libplasma ki18n kpackage
+        run: pacman -Syu --noconfirm --needed git python shellcheck diffutils qt6-declarative qt6-webengine libplasma ki18n kpackage
 
       - name: Check out repository
         uses: actions/checkout@v7.0.1
