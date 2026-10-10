@@ -26,8 +26,10 @@ check_project() {
         exit 1
     fi
     "$qt6_qmllint" --max-warnings 0 "${qml_files[@]}"
-    bash -n "$project_dir/scripts/dev.sh"
-    shellcheck "$project_dir/scripts/dev.sh"
+    for shell_script in "$project_dir"/scripts/*.sh; do
+        bash -n "$shell_script"
+    done
+    shellcheck "$project_dir"/scripts/*.sh
 }
 
 case "${1:-}" in

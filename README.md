@@ -54,6 +54,7 @@ The standalone `plasmawindowed` preview runs in a different host application, so
 | `package/contents/ui/ChatProfile.qml` and `qmldir` | Shared persistent WebEngine profile |
 | `package/metadata.json` | Widget name and stable plugin ID |
 | `scripts/dev.sh` | Checks, installation, updates, and preview |
+| `scripts/test-package.sh` | Isolated package installation and upgrade smoke test |
 
 Run the checks after editing:
 
@@ -61,7 +62,17 @@ Run the checks after editing:
 ./scripts/dev.sh check
 ```
 
-This validates the package metadata and entry point, runs Qt 6 `qmllint` over the QML files (with warnings treated as failures), and checks the development script with Bash's syntax check and ShellCheck. ShellCheck is required locally and in CI. To upgrade the installed copy and open a standalone preview:
+This validates the package metadata and entry point, runs Qt 6 `qmllint` over the QML files (with warnings treated as failures), and checks the shell scripts with Bash's syntax check and ShellCheck. ShellCheck is required locally and in CI.
+
+Run the automated packaging smoke test after packaging changes:
+
+```bash
+./scripts/test-package.sh
+```
+
+It uses `kpackagetool6` to install a temporary package copy, checks that it is discoverable and all files match, then upgrades it with a changed version and QML file and checks the installed files again. Every package operation explicitly targets a temporary package root, which is cleaned up on exit. Your installed widget and browser profile are untouched. CI runs this test on pushes and pull requests; it does not launch Plasma or test sign-in or browser behaviour.
+
+To upgrade the installed copy and open a standalone preview:
 
 ```bash
 ./scripts/dev.sh update
