@@ -216,6 +216,14 @@ Item {
                 profile: root.browserProfile
                 url: root.browserProfile ? "https://chatgpt.com/" : ""
 
+                userScripts.collection: [{
+                    name: "Conversation scroll focus styling",
+                    sourceUrl: Qt.resolvedUrl("../code/scroll-focus.js"),
+                    injectionPoint: WebEngineScript.DocumentReady,
+                    worldId: WebEngineScript.ApplicationWorld,
+                    runsOnSubFrames: false
+                }]
+
                 onLoadingChanged: function(info) {
                     if (info.status === WebEngineView.LoadFailedStatus) {
                         root.pageLoadFailed = true
