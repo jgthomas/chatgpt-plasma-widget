@@ -31,10 +31,9 @@ The popup opens beside the widget's panel position. It requests 30% of the scree
 
 ### Navigation and links
 
-The toolbar has these controls:
+Use ChatGPT's in-page navigation, keyboard scrolling, or the mouse to move through a conversation.
 
-- **Top**, **Scroll up**, **Scroll down**, and **Bottom** to navigate a conversation when ChatGPT's own scrollbar is hard to use.
-- **Open in browser** to hand the current page to your default browser and close the widget popup. The embedded page remains available when you reopen it.
+The **Open in browser** globe button hands the current page to your default browser and closes the widget popup. The embedded page remains available when you reopen it.
 
 New-window links to external sites open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. New windows on ChatGPT or OpenAI domains, authentication dialogs, and blank popup requests stay in Qt WebEngine so they can use the widget's sign-in profile.
 

@@ -90,74 +90,6 @@ Item {
         })
     }
 
-    function scrollConversation(action) {
-        if (browserProfile === null) {
-            return
-        }
-
-        browserView.runJavaScript(`(() => {
-            const action = ${JSON.stringify(action)}
-            // ChatGPT currently uses this element for the conversation scrollbar.
-            // Fall back to the layout search if the site changes its class name.
-            let target = document.querySelector(".thread-scroll-container")
-            if (!target) {
-                const composer = document.querySelector("#prompt-textarea")
-                const main = composer?.closest("main") || document.querySelector("main") || document.body
-                const x = window.innerWidth * 0.5
-                const y = window.innerHeight * 0.35
-                const candidates = [document.scrollingElement, ...document.querySelectorAll("*")]
-                    .filter(element => {
-                        if (!element || element.clientHeight < 100
-                                || element.scrollHeight <= element.clientHeight) {
-                            return false
-                        }
-                        const rect = element.getBoundingClientRect()
-                        if (rect.width === 0 || rect.height === 0
-                                || rect.bottom <= 0 || rect.top >= window.innerHeight
-                                || rect.right <= 0 || rect.left >= window.innerWidth) {
-                            return false
-                        }
-                        if (element === document.scrollingElement) {
-                            return true
-                        }
-                        const overflow = getComputedStyle(element).overflowY
-                        return overflow === "auto" || overflow === "scroll"
-                            || overflow === "overlay" || overflow === "hidden"
-                    })
-                // Prefer the conversation's own scroller over a page wrapper
-                // or the chat list when using the fallback search.
-                const tier = element => main.contains(element) ? 2 : element.contains(main) ? 1 : 0
-                const score = element => {
-                    const rect = element.getBoundingClientRect()
-                    const coversConversation = rect.left <= x && x < rect.right
-                        && rect.top <= y && y < rect.bottom
-                    const range = element.scrollHeight - element.clientHeight
-                    return range * Math.min(rect.width, window.innerWidth)
-                        * (coversConversation ? 4 : 1)
-                }
-                candidates.sort((a, b) => tier(b) - tier(a) || score(b) - score(a))
-                target = candidates[0]
-            }
-            if (!target || target.scrollHeight <= target.clientHeight) {
-                return false
-            }
-
-            if (action === "top" || action === "bottom") {
-                // Reversed scroll containers use 0 at the bottom and negative
-                // scrollTop values above it; these extremes work in either direction.
-                target.scrollTo({
-                    top: action === "top" ? -target.scrollHeight : target.scrollHeight,
-                    behavior: "instant"
-                })
-                return true
-            }
-
-            const page = Math.max(160, Math.round(target.clientHeight * 0.85))
-            target.scrollTop += action === "up" ? -page : page
-            return true
-        })()`)
-    }
-
     Timer {
         id: nudgeTimer
         interval: 50
@@ -245,50 +177,16 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        PlasmaExtras.Heading {
-            Layout.fillWidth: true
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
-            Layout.topMargin: 8
-            level: 1
-            text: root.translations.i18n("ChatGPT")
-            horizontalAlignment: Text.AlignLeft
-        }
-
         RowLayout {
             Layout.fillWidth: true
             Layout.margins: 8
 
-            ToolbarIconButton {
-                text: root.translations.i18n("Top")
-                icon.name: "go-top"
-                focusPolicy: Qt.NoFocus
-                onClicked: root.scrollConversation("top")
-            }
-
-            ToolbarIconButton {
-                text: root.translations.i18n("Scroll up")
-                icon.name: "go-up"
-                focusPolicy: Qt.NoFocus
-                onClicked: root.scrollConversation("up")
-            }
-
-            ToolbarIconButton {
-                text: root.translations.i18n("Scroll down")
-                icon.name: "go-down"
-                focusPolicy: Qt.NoFocus
-                onClicked: root.scrollConversation("down")
-            }
-
-            ToolbarIconButton {
-                text: root.translations.i18n("Bottom")
-                icon.name: "go-bottom"
-                focusPolicy: Qt.NoFocus
-                onClicked: root.scrollConversation("bottom")
-            }
-
-            Item {
+            PlasmaExtras.Heading {
                 Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                level: 1
+                text: root.translations.i18n("ChatGPT")
+                horizontalAlignment: Text.AlignLeft
             }
 
             ToolbarIconButton {
