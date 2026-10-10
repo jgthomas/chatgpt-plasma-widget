@@ -40,16 +40,19 @@ case "${1:-}" in
         check_project
         kpackagetool6 --type Plasma/Applet --install "$package_dir"
         ;;
-    update)
+    update|reload)
         check_project
         kpackagetool6 --type Plasma/Applet --upgrade "$package_dir"
+        if [[ "$1" == reload ]]; then
+            systemctl --user restart plasma-plasmashell.service
+        fi
         ;;
     preview)
         plugin_id="$(python3 "$project_dir/scripts/check_metadata.py" "$package_dir")"
         plasmawindowed "$plugin_id"
         ;;
     *)
-        printf 'Usage: %s {check|install|update|preview}\n' "$0" >&2
+        printf 'Usage: %s {check|install|update|reload|preview}\n' "$0" >&2
         exit 2
         ;;
 esac

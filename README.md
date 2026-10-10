@@ -52,18 +52,15 @@ Run `scripts/dev.sh` from the repository root:
 ./scripts/dev.sh check    # Validate metadata, QML, and shell scripts
 ./scripts/dev.sh install  # Install the widget for the first time
 ./scripts/dev.sh update   # Upgrade the installed widget after editing
+./scripts/dev.sh reload   # Upgrade the widget and restart Plasma Shell
 ./scripts/dev.sh preview  # Open the installed widget in a standalone window
 ```
 
-`install` and `update` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation.
+`install`, `update`, and `reload` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation.
 
 After editing, run `update` followed by `preview`. Use the preview for quick layout checks; test popup placement, opening animation, the global shortcut, and sign-in from a Plasma panel.
 
-If the panel widget still shows the old version after `update`, restart Plasma Shell:
-
-```bash
-systemctl --user restart plasma-plasmashell.service
-```
+To try changes in the panel widget, run `reload`. It upgrades the installed copy and restarts Plasma Shell after a successful upgrade so the panel loads the latest code.
 
 Run the automated packaging smoke test after packaging changes:
 
