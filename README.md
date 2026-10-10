@@ -73,6 +73,8 @@ Run the automated packaging smoke test after packaging changes:
 
 It uses `kpackagetool6` to install a temporary package copy, checks that it is discoverable and all files match, then upgrades it with a changed version and QML file and checks the installed files again. Every package operation explicitly targets a temporary package root, which is cleaned up on exit. Your installed widget and browser profile are untouched. CI runs this test on pushes and pull requests; it does not launch Plasma or test sign-in or browser behaviour.
 
+CI caches pacman's downloaded package archives with a daily key and falls back to the most recent cache for the same runner architecture. Every run still performs a full Arch upgrade and dependency installation; cached downloads do not pin package versions. Old package versions are pruned before saving. This reduces repeat downloads, but packages updated by Arch still need downloading, and package installation runs every time.
+
 To upgrade the installed copy and open a standalone preview:
 
 ```bash

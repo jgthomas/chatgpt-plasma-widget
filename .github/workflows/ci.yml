@@ -16,8 +16,25 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base
     steps:
+      - name: Set package cache date
+        id: cache-date
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      # Cache downloads only: always sync and fully upgrade the fresh container.
+      # Daily keys let this immutable cache refresh as Arch packages change.
+      - name: Cache pacman downloads
+        uses: actions/cache@v5
+        with:
+          path: /var/cache/pacman/pkg
+          key: archlinux-pacman-v1-${{ runner.arch }}-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            archlinux-pacman-v1-${{ runner.arch }}-
+
       - name: Install check dependencies
         run: pacman -Syu --noconfirm --needed git python shellcheck diffutils qt6-declarative qt6-webengine libplasma ki18n kpackage
+
+      - name: Prune old cached packages
+        run: pacman -Sc --noconfirm
 
       - name: Check out repository
         uses: actions/checkout@v7.0.1
