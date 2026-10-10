@@ -10,9 +10,7 @@ A Plasma 6 panel widget that opens the ChatGPT website in a popup. It embeds the
 - `diff` (provided by `diffutils` on Arch) to run the package smoke test
 - `plasmawindowed` for the optional standalone preview
 
-## Install and use
-
-### Install
+## Install
 
 From this repository, run:
 
@@ -21,6 +19,8 @@ From this repository, run:
 ```
 
 In Plasma, open **Add Widgets**, find **ChatGPT Plasma Prototype**, and add it to a panel.
+
+## Use
 
 ### Open and close
 
@@ -76,9 +76,3 @@ The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the packag
 
 For preview errors, inspect the `plasmawindowed` terminal. For panel errors, follow the Plasma Shell journal with `journalctl --user -u plasma-plasmashell.service -f`.
 
-## References
-
-- [KDE Plasma widget setup](https://develop.kde.org/docs/plasma/widget/setup/)
-- [KDE Plasma widget testing](https://develop.kde.org/docs/plasma/widget/testing/)
-- [KDE's QML translation guide](https://develop.kde.org/docs/plasma/widget/translations-i18n/)
-- [Qt WebEngine profile storage](https://doc.qt.io/qt-6/qml-qtwebengine-webengineprofileprototype.html)
