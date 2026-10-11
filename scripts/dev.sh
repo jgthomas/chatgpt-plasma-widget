@@ -53,6 +53,10 @@ case "${1:-}" in
     test)
         test_project
         ;;
+    verify)
+        check_project
+        test_project
+        ;;
     install)
         check_project
         kpackagetool6 --type Plasma/Applet --install "$package_dir"
@@ -69,7 +73,7 @@ case "${1:-}" in
         plasmawindowed "$plugin_id"
         ;;
     *)
-        printf 'Usage: %s {check|test|install|update|reload|preview}\n' "$0" >&2
+        printf 'Usage: %s {check|test|verify|install|update|reload|preview}\n' "$0" >&2
         exit 2
         ;;
 esac

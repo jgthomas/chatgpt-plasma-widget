@@ -52,30 +52,48 @@ The standalone `plasmawindowed` preview runs in a different host application, so
 
 `package/` contains the installable Plasma widget: its metadata and QML components for the panel icon, popup, embedded browser, and shared browser profile. `scripts/` contains the development and packaging helpers.
 
-Run `scripts/dev.sh` from the repository root:
+For normal development, edit the widget, then run these commands from the repository root:
+
+```bash
+./scripts/dev.sh verify   # Run all project checks and tests
+./scripts/dev.sh reload   # Upgrade the widget and restart Plasma Shell
+```
+
+Open the panel widget to try the changes. Use the panel widget to check layout, focus, popup placement, opening animation, the global shortcut, links, and sign-in.
+
+### Commands
 
 ```bash
 ./scripts/dev.sh check    # Validate metadata, QML, and shell scripts
 ./scripts/dev.sh test     # Run routing, popup, and package tests
+./scripts/dev.sh verify   # Run all project checks and tests
 ./scripts/dev.sh install  # Install the widget for the first time
-./scripts/dev.sh update   # Upgrade the installed widget after editing
+./scripts/dev.sh update   # Upgrade the installed widget without restarting its host
 ./scripts/dev.sh reload   # Upgrade the widget and restart Plasma Shell
-./scripts/dev.sh preview  # Open the installed widget in a standalone window
+./scripts/dev.sh preview  # Standalone inspection of the installed widget
 ```
 
 `install`, `update`, and `reload` run the static checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation. The separate `test` command runs Qt Quick tests of link routing, navigation state transitions, and popup destruction, followed by the package install/upgrade smoke test. The Qt Quick tests run offscreen without a ChatGPT account or network access.
 
-After editing, run `update` followed by `preview`. Use the preview for quick layout checks; test popup placement, opening animation, the global shortcut, and sign-in from a Plasma panel.
+Use `check` or `test` to run just that part of verification. Use `update` when you want to upgrade the installed files and restart the host separately. `preview` is optional for quick standalone inspection; run `update` first if you need it to show recent edits. The preview has a separate browser profile and differs from the panel widget in focus, popup behaviour, and placement, so verify those in the panel after `reload`.
 
-To try changes in the panel widget, run `reload`. It upgrades the installed copy and restarts Plasma Shell after a successful upgrade so the panel loads the latest code.
+### Tests
 
-Run the automated packaging smoke test after packaging changes:
+Run all automated tests directly with:
+
+```bash
+./scripts/dev.sh test
+```
+
+This covers link routing, popup navigation after sign-in, cleanup of pending windows, and package installation and upgrades. The Qt Quick tests run offscreen; the packaging test uses a temporary package root. Neither changes your installed widget or browser profile, and no ChatGPT account or network access is needed.
+
+To run only the package install/upgrade smoke test:
 
 ```bash
 ./scripts/test-package.sh
 ```
 
-This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. It is also included in `./scripts/dev.sh test`. CI runs static checks in **Check project** and the full automated test suite in **Run all tests** on pushes and pull requests. Live sign-in, actual default-browser launching, and ChatGPT's client-side link handling still need manual testing.
+CI runs static checks in **Check project** and the full automated test suite in **Run all tests** on pushes and pull requests. Live sign-in, actual default-browser launching, and ChatGPT's client-side link handling still need manual testing.
 
 The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the package as a different widget, so keep it stable. Keep installable files under `package/` and translate new user-visible QML text with `root.translations.i18n("...")`.
 
