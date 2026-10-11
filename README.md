@@ -36,11 +36,9 @@ The **Open in browser** globe button hands the current page to your default brow
 
 Links to external sites open in your default browser while the widget stays open, whether they request a new window or navigate the current one. Same-window ChatGPT navigation stays embedded, including links within and between conversations, starting a new chat, and opening settings. ChatGPT's client-side conversation routing is left untouched.
 
-New-window requests open externally unless they are part of ChatGPT sign-in. Authentication is identified by `auth.openai.com`, `auth0.openai.com`, and the `/auth` or `/api/auth` routes on ChatGPT. Embedded authentication is restricted to those destinations and returning to ChatGPT. All external destinations, including Google, Apple, Microsoft, and enterprise identity providers, open externally even during sign-in, including scripted navigation and redirects. Returning to an ordinary ChatGPT page ends that authentication context; subsequent same-window ChatGPT navigation and reloads remain in the established popup. Ordinary OpenAI links and dialog requests do not automatically qualify as sign-in. External-provider sign-in to the widget is not currently supported because there is no browser-to-widget authentication handoff.
+New-window requests open in your default browser, except ChatGPT's own sign-in windows, which stay embedded. External sign-in providers also open in your browser but cannot sign the widget in.
 
-A blank popup waits invisibly for its destination: authentication stays embedded; other destinations open externally. Undirected blank popups are discarded after 15 seconds. Navigation inside embedded frames is left alone. Links using external protocols such as `mailto:` go to the system handler; new navigation to local files, inline data, JavaScript, and other browser-internal URLs is blocked.
-
-Sign-in URL patterns may need updating if ChatGPT changes its authentication flow.
+Blank popups stay hidden until their destination is known. Sign-in handling may need updating if ChatGPT changes its authentication flow.
 
 ### Sign-in and browser profiles
 
