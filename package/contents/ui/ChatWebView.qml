@@ -9,6 +9,7 @@ import org.kde.ki18n
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.extras as PlasmaExtras
 import "." 1.0 as Shared
+import "../code/link-routing.js" as Links
 
 Item {
     id: root
@@ -98,32 +99,33 @@ Item {
 
     property var browserProfile: Shared.ChatProfile.profile
 
-    function openPopup(request) {
+    function openExternal(target) {
+        if (!Qt.openUrlExternally(target)) {
+            loadError = root.translations.i18n("Could not open the link in your browser.")
+        }
+    }
+
+    function openPopup(request, authenticating) {
         const popup = popupComponent.createObject(null) as SignInWindow
         if (popup) {
+            popup.webView.authInProgress = authenticating
             popup.webView.acceptAsNewWindow(request)
         } else {
             loadError = root.translations.i18n("Could not open the sign-in window.")
         }
     }
 
-    function handleNewWindow(request) {
-        const target = request.requestedUrl.toString()
-        // Keep ChatGPT sign-in on its own domains in the shared profile, even
-        // when a click opens an HTTPS window. Blank pages and dialogs can
-        // navigate to sign-in later.
-        const chatgptDomain = /^https:\/\/(?:[a-z0-9-]+\.)*(?:chatgpt\.com|openai\.com)(?::[0-9]+)?(?:[/?#]|$)/i.test(target)
-        if (!request.userInitiated
-                || request.destination === WebEngineNewWindowRequest.InNewDialog
-                || !/^https?:\/\//i.test(target)
-                || chatgptDomain) {
-            openPopup(request)
-            return
+    function handleNewWindow(request, authenticating) {
+        const route = Links.route(request.requestedUrl, true, authenticating)
+        if (route === "embedded" || route === "pending") {
+            openPopup(request, authenticating || route === "embedded")
+        } else if (route === "external") {
+            openExternal(request.requestedUrl)
         }
+    }
 
-        if (!Qt.openUrlExternally(request.requestedUrl)) {
-            loadError = root.translations.i18n("Could not open the link in your browser.")
-        }
+    function handleNavigation(request, view, popup) {
+        Links.navigate(request, view, popup, target => root.openExternal(target))
     }
 
     Component {
@@ -132,13 +134,10 @@ Item {
         SignInWindow {}
     }
 
-    component SignInWindow: Window {
+    component SignInWindow: Shared.SignInPopupWindow {
         id: popupWindow
-        width: 800
-        height: 700
-        visible: true
+        // Blank window.open() requests are classified at their first navigation.
         title: root.translations.i18n("ChatGPT sign-in")
-        onClosing: destroy()
 
         property alias webView: popupWebView
 
@@ -146,8 +145,10 @@ Item {
             id: popupWebView
             anchors.fill: parent
             profile: root.browserProfile
-            onNewWindowRequested: function(request) { root.openPopup(request) }
-            onWindowCloseRequested: popupWindow.close()
+            property bool authInProgress: false
+            onNavigationRequested: function(request) { root.handleNavigation(request, popupWebView, popupWindow) }
+            onNewWindowRequested: function(request) { root.handleNewWindow(request, authInProgress) }
+            onWindowCloseRequested: popupWindow.dismiss()
         }
     }
 
@@ -214,6 +215,7 @@ Item {
                 id: browserView
                 anchors.fill: parent
                 profile: root.browserProfile
+                property bool authInProgress: false
                 url: root.browserProfile ? "https://chatgpt.com/" : ""
 
                 userScripts.collection: [{
@@ -240,7 +242,8 @@ Item {
                     }
                 }
 
-                onNewWindowRequested: function(request) { root.handleNewWindow(request) }
+                onNavigationRequested: function(request) { root.handleNavigation(request, browserView, null) }
+                onNewWindowRequested: function(request) { root.handleNewWindow(request, authInProgress) }
 
                 onRenderProcessTerminated: function(status, exitCode) {
                     console.warn("ChatGPT widget renderer terminated: status=" + status + ", exitCode=" + exitCode)

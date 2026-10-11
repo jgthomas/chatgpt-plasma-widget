@@ -6,7 +6,7 @@ A Plasma 6 panel widget that opens the ChatGPT website in a popup. It embeds the
 
 - KDE Plasma 6, Qt 6.9 or newer, KDE Frameworks 6.23 or newer (KI18n QML module), and the Qt WebEngine QML module
 - `kpackagetool6` to install the widget
-- `python3`, `shellcheck`, `qmake6`, and Qt 6 `qmllint` to run the project checks
+- `python3`, `shellcheck`, `qmake6`, Qt 6 `qmllint`, `qmltestrunner`, and the QtTest QML module to run the project checks
 - `diff` (provided by `diffutils` on Arch) to run the package smoke test
 - `plasmawindowed` for the optional standalone preview
 
@@ -34,11 +34,17 @@ The popup opens beside the widget's panel position. It requests 30% of the scree
 
 The **Open in browser** globe button hands the current page to your default browser and closes the widget popup. The embedded page remains available when you reopen it.
 
-New-window links to external sites open in your default browser while the widget stays open. Links that navigate the current page stay inside the widget. New windows on ChatGPT or OpenAI domains, authentication dialogs, and blank popup requests stay in Qt WebEngine so they can use the widget's sign-in profile.
+Links to external sites open in your default browser while the widget stays open, whether they request a new window or navigate the current one. Same-window ChatGPT navigation stays embedded, including links within and between conversations, starting a new chat, and opening settings. ChatGPT's client-side conversation routing is left untouched.
+
+New-window requests open externally unless they are part of ChatGPT sign-in. Authentication is identified by `auth.openai.com`, `auth0.openai.com`, and the `/auth` or `/api/auth` routes on ChatGPT. Embedded authentication is restricted to those destinations and returning to ChatGPT. All external destinations, including Google, Apple, Microsoft, and enterprise identity providers, open externally even during sign-in, including scripted navigation and redirects. Returning to an ordinary ChatGPT page ends that authentication context; subsequent same-window ChatGPT navigation and reloads remain in the established popup. Ordinary OpenAI links and dialog requests do not automatically qualify as sign-in. External-provider sign-in to the widget is not currently supported because there is no browser-to-widget authentication handoff.
+
+A blank popup waits invisibly for its destination: authentication stays embedded; other destinations open externally. Undirected blank popups are discarded after 15 seconds. Navigation inside embedded frames is left alone. Links using external protocols such as `mailto:` go to the system handler; new navigation to local files, inline data, JavaScript, and other browser-internal URLs is blocked.
+
+Sign-in URL patterns may need updating if ChatGPT changes its authentication flow.
 
 ### Sign-in and browser profiles
 
-Open the popup and sign in to ChatGPT there. The widget keeps a persistent browser profile separate from your regular browser, so each needs its own sign-in. Multiple copies of the widget within Plasma Shell share the same profile and sign-in.
+Open the popup and sign in to ChatGPT there. The widget keeps a persistent browser profile separate from your regular browser, so each needs its own sign-in. Google disallows embedded OAuth, so Google authentication URLs open externally. This does not sign the widget in: there is no browser-to-widget authentication handoff, and the external flow may also lack the state cookies established in the widget. Google-based sign-in to the widget is therefore not currently supported. Multiple copies of the widget within Plasma Shell share the same profile and sign-in.
 
 The standalone `plasmawindowed` preview runs in a different host application, so it has a separate profile from the panel widget. Qt stores browser data in the host application's user data directory, outside this repository.
 
@@ -56,7 +62,7 @@ Run `scripts/dev.sh` from the repository root:
 ./scripts/dev.sh preview  # Open the installed widget in a standalone window
 ```
 
-`install`, `update`, and `reload` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation.
+`install`, `update`, and `reload` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation and Qt Quick tests of link routing, navigation state transitions, and popup destruction. These tests run offscreen locally and in CI without a ChatGPT account or network access.
 
 After editing, run `update` followed by `preview`. Use the preview for quick layout checks; test popup placement, opening animation, the global shortcut, and sign-in from a Plasma panel.
 
@@ -68,7 +74,7 @@ Run the automated packaging smoke test after packaging changes:
 ./scripts/test-package.sh
 ```
 
-This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. CI runs the checks and packaging test on pushes and pull requests; browser behaviour needs manual testing.
+This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. CI runs the checks (including routing policy tests) and packaging test on pushes and pull requests. Live sign-in, actual default-browser launching, and ChatGPT's client-side link handling still need manual testing.
 
 The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the package as a different widget, so keep it stable. Keep installable files under `package/` and translate new user-visible QML text with `root.translations.i18n("...")`.
 

@@ -1,2 +1,3 @@
 singleton ChatProfile 1.0 ChatProfile.qml
 ChatWebView 1.0 ChatWebView.qml
+SignInPopupWindow 1.0 SignInPopupWindow.qml

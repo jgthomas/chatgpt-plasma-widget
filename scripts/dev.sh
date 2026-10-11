@@ -30,6 +30,12 @@ check_project() {
         bash -n "$shell_script"
     done
     shellcheck "$project_dir"/scripts/*.sh
+    qt6_test_runner="$(qmake6 -query QT_INSTALL_BINS)/qmltestrunner"
+    if [[ ! -x "$qt6_test_runner" ]]; then
+        printf 'Qt 6 qmltestrunner not found at %s\n' "$qt6_test_runner" >&2
+        exit 1
+    fi
+    QT_QPA_PLATFORM=offscreen "$qt6_test_runner" -input "$project_dir/tests"
 }
 
 case "${1:-}" in
