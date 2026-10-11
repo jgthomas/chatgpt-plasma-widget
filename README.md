@@ -56,13 +56,14 @@ Run `scripts/dev.sh` from the repository root:
 
 ```bash
 ./scripts/dev.sh check    # Validate metadata, QML, and shell scripts
+./scripts/dev.sh test     # Run routing, popup, and package tests
 ./scripts/dev.sh install  # Install the widget for the first time
 ./scripts/dev.sh update   # Upgrade the installed widget after editing
 ./scripts/dev.sh reload   # Upgrade the widget and restart Plasma Shell
 ./scripts/dev.sh preview  # Open the installed widget in a standalone window
 ```
 
-`install`, `update`, and `reload` run the checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation and Qt Quick tests of link routing, navigation state transitions, and popup destruction. These tests run offscreen locally and in CI without a ChatGPT account or network access.
+`install`, `update`, and `reload` run the static checks automatically. The checks use Qt 6 `qmllint` with warnings treated as failures, Bash's syntax check, and ShellCheck, alongside metadata validation. The separate `test` command runs Qt Quick tests of link routing, navigation state transitions, and popup destruction, followed by the package install/upgrade smoke test. The Qt Quick tests run offscreen without a ChatGPT account or network access.
 
 After editing, run `update` followed by `preview`. Use the preview for quick layout checks; test popup placement, opening animation, the global shortcut, and sign-in from a Plasma panel.
 
@@ -74,7 +75,7 @@ Run the automated packaging smoke test after packaging changes:
 ./scripts/test-package.sh
 ```
 
-This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. CI runs the checks (including routing policy tests) and packaging test on pushes and pull requests. Live sign-in, actual default-browser launching, and ChatGPT's client-side link handling still need manual testing.
+This verifies installation and upgrades in a temporary package root without changing your installed widget or browser profile. It is also included in `./scripts/dev.sh test`. CI runs static checks in **Check project** and the full automated test suite in **Run all tests** on pushes and pull requests. Live sign-in, actual default-browser launching, and ChatGPT's client-side link handling still need manual testing.
 
 The plugin ID is `dev.chatgpt.plasma`. Changing it makes Plasma treat the package as a different widget, so keep it stable. Keep installable files under `package/` and translate new user-visible QML text with `root.translations.i18n("...")`.
 

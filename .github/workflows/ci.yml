@@ -30,7 +30,7 @@ jobs:
           restore-keys: |
             archlinux-pacman-v1-${{ runner.arch }}-
 
-      - name: Install check dependencies
+      - name: Install check and test dependencies
         run: pacman -Syu --noconfirm --needed git python shellcheck diffutils qt6-declarative qt6-webengine libplasma ki18n kpackage
 
       - name: Prune old cached packages
@@ -41,8 +41,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Check widget
+      - name: Check project
         run: ./scripts/dev.sh check
 
-      - name: Test package installation and upgrade
-        run: ./scripts/test-package.sh
+      - name: Run all tests
+        run: ./scripts/dev.sh test

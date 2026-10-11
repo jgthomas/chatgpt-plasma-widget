@@ -30,17 +30,28 @@ check_project() {
         bash -n "$shell_script"
     done
     shellcheck "$project_dir"/scripts/*.sh
+}
+
+test_project() {
+    if ! command -v qmake6 >/dev/null 2>&1; then
+        printf 'qmake6 is required to locate the Qt 6 qmltestrunner\n' >&2
+        exit 1
+    fi
     qt6_test_runner="$(qmake6 -query QT_INSTALL_BINS)/qmltestrunner"
     if [[ ! -x "$qt6_test_runner" ]]; then
         printf 'Qt 6 qmltestrunner not found at %s\n' "$qt6_test_runner" >&2
         exit 1
     fi
     QT_QPA_PLATFORM=offscreen "$qt6_test_runner" -input "$project_dir/tests"
+    "$project_dir/scripts/test-package.sh"
 }
 
 case "${1:-}" in
     check)
         check_project
+        ;;
+    test)
+        test_project
         ;;
     install)
         check_project
@@ -58,7 +69,7 @@ case "${1:-}" in
         plasmawindowed "$plugin_id"
         ;;
     *)
-        printf 'Usage: %s {check|install|update|reload|preview}\n' "$0" >&2
+        printf 'Usage: %s {check|test|install|update|reload|preview}\n' "$0" >&2
         exit 2
         ;;
 esac
