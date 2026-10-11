@@ -27,14 +27,21 @@ TestCase {
         tryCompare(testCase, "destroyedWindows", before + 1)
     }
 
-    function test_establishedWindowDoesNotExpire() {
+    function test_establishingPendingWindowCancelsTimeout() {
         const before = destroyedWindows
         const popup = windowComponent.createObject(null, {
-            destinationTimeout: 20, destinationPending: false
+            destinationTimeout: 200
         })
-        wait(60)
-        compare(destroyedWindows, before)
-        popup.dismiss()
+        try {
+            wait(20) // Let the pending window's timer start.
+            compare(destroyedWindows, before)
+            compare(popup.destinationPending, true)
+            popup.destinationPending = false
+            wait(240) // Survive beyond the original pending deadline.
+            compare(destroyedWindows, before)
+        } finally {
+            if (destroyedWindows === before) popup.dismiss()
+        }
         tryCompare(testCase, "destroyedWindows", before + 1)
     }
 }
