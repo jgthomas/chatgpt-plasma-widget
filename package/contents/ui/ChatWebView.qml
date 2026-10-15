@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
 import org.kde.ki18n
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.extras as PlasmaExtras
 import "." 1.0 as Shared
@@ -176,7 +177,7 @@ Item {
                     icon.name: "globe"
                     QQC2.ToolTip.text: text
                     QQC2.ToolTip.visible: hovered
-                    QQC2.ToolTip.delay: 500
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {
                         const target = browserView.url.toString().length > 0 ? browserView.url : "https://chatgpt.com/"
                         if (Qt.openUrlExternally(target)) {
@@ -191,7 +192,7 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.margins: 8
+            Layout.margins: Kirigami.Units.largeSpacing
             visible: root.loadError.length > 0
 
             PlasmaComponents.Label {
