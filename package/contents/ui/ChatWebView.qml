@@ -161,12 +161,12 @@ Item {
             Layout.fillWidth: true
 
             contentItem: RowLayout {
+                spacing: Kirigami.Units.mediumSpacing
                 PlasmaExtras.Heading {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
                     level: 1
                     text: root.translations.i18n("ChatGPT")
-                    horizontalAlignment: Text.AlignLeft
                     elide: Text.ElideRight
                     wrapMode: Text.NoWrap
                 }
@@ -190,22 +190,18 @@ Item {
             }
         }
 
-        RowLayout {
+        Kirigami.InlineMessage {
             Layout.fillWidth: true
             Layout.margins: Kirigami.Units.largeSpacing
             visible: root.loadError.length > 0
-
-            PlasmaComponents.Label {
-                Layout.fillWidth: true
-                text: root.loadError
-                wrapMode: Text.WordWrap
-            }
-
-            PlasmaComponents.Button {
+            type: Kirigami.MessageType.Error
+            text: root.loadError
+            actions: [Kirigami.Action {
                 visible: root.pageLoadFailed
                 text: root.translations.i18n("Try again")
-                onClicked: browserView.reload()
-            }
+                icon.name: "view-refresh"
+                onTriggered: browserView.reload()
+            }]
         }
 
         Item {

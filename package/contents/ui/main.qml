@@ -2,14 +2,17 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 
 PlasmoidItem {
     id: root
 
-    readonly property int popupTargetWidth: Math.max(800, Math.min(1600, Math.round(screenGeometry.width * 0.3)))
-    readonly property int popupTargetHeight: Math.max(400, Math.min(1200, Math.round(screenGeometry.height * 0.8)))
+    readonly property int popupTargetWidth: Math.min(Math.round(screenGeometry.width * 0.9),
+        Math.max(Kirigami.Units.gridUnit * 44, Math.min(Kirigami.Units.gridUnit * 88, Math.round(screenGeometry.width * 0.3))))
+    readonly property int popupTargetHeight: Math.min(Math.round(screenGeometry.height * 0.9),
+        Math.max(Kirigami.Units.gridUnit * 22, Math.min(Kirigami.Units.gridUnit * 66, Math.round(screenGeometry.height * 0.8))))
 
     // Plasma supplies the panel icon and handles opening this representation.
     Plasmoid.icon: "dialog-messages"
@@ -23,11 +26,10 @@ PlasmoidItem {
     fullRepresentation: ChatWebView {
         popupExpanded: root.expanded
         onCloseRequested: root.expanded = false
-        Layout.minimumWidth: 500
-        Layout.minimumHeight: 400
+        Layout.minimumWidth: Math.min(Kirigami.Units.gridUnit * 28, root.popupTargetWidth)
+        Layout.minimumHeight: Math.min(Kirigami.Units.gridUnit * 22, root.popupTargetHeight)
         Layout.preferredWidth: root.popupTargetWidth
-        // Plasma remembers a manually sized popup; keep older values from
-        // overriding the screen-relative width while we test this layout.
+        // Keep remembered sizes within the screen-relative targets.
         Layout.maximumWidth: root.popupTargetWidth
         Layout.preferredHeight: root.popupTargetHeight
         Layout.maximumHeight: root.popupTargetHeight

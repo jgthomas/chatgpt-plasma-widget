@@ -1,10 +1,11 @@
 import QtQuick
 import QtQuick.Window
+import org.kde.kirigami as Kirigami
 
 Window {
     id: popup
-    width: 800
-    height: 700
+    width: Math.min(Kirigami.Units.gridUnit * 44, Screen.width * 0.9)
+    height: Math.min(Kirigami.Units.gridUnit * 39, Screen.height * 0.9)
     visible: false
     property bool destinationPending: true
     property int destinationTimeout: 15000
