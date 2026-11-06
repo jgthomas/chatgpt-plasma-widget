@@ -23,7 +23,7 @@ jobs:
       # Cache downloads only: always sync and fully upgrade the fresh container.
       # Daily keys let this immutable cache refresh as Arch packages change.
       - name: Cache pacman downloads
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: /var/cache/pacman/pkg
           key: archlinux-pacman-v1-${{ runner.arch }}-${{ steps.cache-date.outputs.date }}
